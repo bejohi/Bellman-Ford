@@ -5,57 +5,29 @@
 
 static unsigned int testCounter = 0;
 
-
-bool test_initGraph_size100000000() {
+static bool test_createGraph_sizeIs10000_graphCorrectCreated(){
     // Arrange
-    Graph graph = {};
-    ULL size = 100000000; // 100.000.000
-
+    unsigned int size = 10000;
     // Act
-    initGraph(&graph, size);
+    Graph graph = createGraph(size);
 
     // Assert
-    if (graph.size != size) {
+    if(graph.size != size){
         return false;
     }
 
-    if (graph.adjList[0].next != NULL) {
+    if(graph.adjMatrix[0][0] != 0){
         return false;
     }
 
-    if (graph.adjList[size - 1].next != NULL) {
+    if(graph.adjMatrix[size-1][size-1] != 0){
         return false;
     }
-
-    destroyGraph(&graph);
     return true;
-
 }
 
-bool test_addEdgeInBothDirections_correctEdge(){
-    // Arrange
-    Graph graph = {};
-    ULL size = 10;
-    initGraph(&graph,size);
 
-    // Act
-    addEdgeInBothDirections(&graph,0,1,100.5);
-
-    // Assert
-    if(graph.adjList[0].next == NULL || graph.adjList[0].next->weight != 100.5 || graph.adjList[0].next->index != 1){
-        return false;
-    }
-
-    if(graph.adjList[1].next == NULL || graph.adjList[1].next->weight != 100.5 || graph.adjList[1].next->index != 0){
-        return false;
-    }
-
-    destroyGraph(&graph);
-    return true;
-
-}
-
-void printTestResult(bool result, char *testName) {
+static void printTestResult(bool result, char *testName) {
     if (!result) {
         printf("TEST FAILED: %s \n", testName);
     }
@@ -64,8 +36,8 @@ void printTestResult(bool result, char *testName) {
 
 void runTestSuite() {
     printf("RUN Test Suite\n");
-    printTestResult(test_initGraph_size100000000(), "test_initGraph_size100000000");
-    printTestResult(test_addEdgeInBothDirections_correctEdge(),"test_addEdgeInBothDirections_correctEdge");
+
+    printTestResult(test_createGraph_sizeIs10000_graphCorrectCreated(),
+                    "test_createGraph_sizeIs10000_graphCorrectCreated");
     printf("%d tests run \n", testCounter);
 }
-

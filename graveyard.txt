@@ -1,0 +1,131 @@
+#ifndef INF236_CA2_GRAPH_H
+#define INF236_CA2_GRAPH_H
+
+#include <stdlib.h>
+
+typedef unsigned long long ULL;
+
+typedef struct Edge {
+    ULL index;
+    double weight;
+    struct Edge *next;
+} Edge;
+
+typedef struct {
+    ULL size;
+    Edge *adjList;
+} Graph;
+
+void initGraph(Graph *graph, ULL graphSize) {
+    graph->size = graphSize;
+    graph->adjList = (Edge *) malloc(sizeof(Edge) * graphSize);
+}
+
+void addEdgeInBothDirections(Graph *graph, ULL edge1, ULL edge2, double weight){
+
+    // TODO Bounds check
+
+    Edge* currentEdge = &graph->adjList[edge1];
+    while(true){
+        if(currentEdge->next != NULL){
+            currentEdge = currentEdge->next;
+            continue;
+        }
+        currentEdge->next = malloc(sizeof(Edge));
+        currentEdge->next->index = edge2;
+        currentEdge->next->next = NULL;
+        currentEdge->next->weight = weight;
+        break;
+    }
+    currentEdge = &graph->adjList[edge2];
+    while(true){
+        if(currentEdge->next != NULL){
+            currentEdge = currentEdge->next;
+            continue;
+        }
+        currentEdge->next = malloc(sizeof(Edge));
+        currentEdge->next->index = edge1;
+        currentEdge->next->next = NULL;
+        currentEdge->next->weight = weight;
+        break;
+    }
+}
+
+void destroyGraph(Graph *graph) {
+    free(graph->adjList);
+    // TODO: Free all edges
+}
+
+#endif //INF236_CA2_GRAPH_H
+
+#include <stdio.h>
+#include <stdbool.h>
+#include "graph.h"
+#include "testGraph.h"
+
+static unsigned int testCounter = 0;
+
+
+bool test_initGraph_size100000000() {
+    // Arrange
+    Graph graph = {};
+    ULL size = 100000000; // 100.000.000
+
+    // Act
+    initGraph(&graph, size);
+
+    // Assert
+    if (graph.size != size) {
+        return false;
+    }
+
+    if (graph.adjList[0].next != NULL) {
+        return false;
+    }
+
+    if (graph.adjList[size - 1].next != NULL) {
+        return false;
+    }
+
+    destroyGraph(&graph);
+    return true;
+
+}
+
+bool test_addEdgeInBothDirections_correctEdge(){
+    // Arrange
+    Graph graph = {};
+    ULL size = 10;
+    initGraph(&graph,size);
+
+    // Act
+    addEdgeInBothDirections(&graph,0,1,100.5);
+
+    // Assert
+    if(graph.adjList[0].next == NULL || graph.adjList[0].next->weight != 100.5 || graph.adjList[0].next->index != 1){
+        return false;
+    }
+
+    if(graph.adjList[1].next == NULL || graph.adjList[1].next->weight != 100.5 || graph.adjList[1].next->index != 0){
+        return false;
+    }
+
+    destroyGraph(&graph);
+    return true;
+
+}
+
+void printTestResult(bool result, char *testName) {
+    if (!result) {
+        printf("TEST FAILED: %s \n", testName);
+    }
+    testCounter++;
+}
+
+void runTestSuite() {
+    printf("RUN Test Suite\n");
+    printTestResult(test_initGraph_size100000000(), "test_initGraph_size100000000");
+    printTestResult(test_addEdgeInBothDirections_correctEdge(),"test_addEdgeInBothDirections_correctEdge");
+    printf("%d tests run \n", testCounter);
+}
+

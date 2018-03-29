@@ -3,6 +3,6 @@ project(INF236_CA2 C)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c99 -fopenmp -lm")
 
-add_executable(INF236_CA2 src/task1.c src/graph.h src/testGraph.c src/testGraph.h src/main.c)
+add_executable(INF236_CA2 src/task1.c src/testGraph.c src/testGraph.h src/main.c src/graph.h)
 
 # DEBUG in CLion: e.g. (Edge[100000000])*(Edge*)graph.adjList
