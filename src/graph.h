@@ -12,9 +12,9 @@ typedef struct Graph {
 } Graph;
 
 
-Graph* createGraph(unsigned int numberOfVertices){
+Graph createGraph(unsigned int numberOfVertices){
     if(numberOfVertices > maxMatrixSize){
-        return NULL;
+        numberOfVertices = maxMatrixSize;
     }
     Graph graph = {};
     graph.size = numberOfVertices;
@@ -25,7 +25,18 @@ Graph* createGraph(unsigned int numberOfVertices){
             graph.adjMatrix[i][x] = 0;
         }
     }
-    return &graph;
+    return graph;
+}
+
+void destroyGraph(Graph* graph){
+    for(unsigned int i = 0; i < graph->size; i++){
+        if(graph->adjMatrix[i] != NULL){
+            free(graph->adjMatrix[i]);
+        }
+    }
+    if(graph->adjMatrix != NULL){
+        free(graph->adjMatrix);
+    }
 }
 
 #endif //INF236_CA2_ADJMATRIX_H

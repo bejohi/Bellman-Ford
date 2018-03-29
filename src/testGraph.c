@@ -23,6 +23,8 @@ static bool test_createGraph_sizeIs10000_graphCorrectCreated(){
     if(graph.adjMatrix[size-1][size-1] != 0){
         return false;
     }
+
+    destroyGraph(&graph);
     return true;
 }
 
