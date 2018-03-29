@@ -20,14 +20,41 @@ typedef struct {
 void initGraph(Graph *graph, ULL graphSize) {
     graph->size = graphSize;
     graph->adjList = (Edge *) malloc(sizeof(Edge) * graphSize);
-    for (ULL i = 0; i < graphSize; i++) {
-        graph->adjList[i].next = NULL;
+}
+
+void addEdgeInBothDirections(Graph *graph, ULL edge1, ULL edge2, double weight){
+
+    // TODO Bounds check
+
+    Edge* currentEdge = &graph->adjList[edge1];
+    while(true){
+        if(currentEdge->next != NULL){
+            currentEdge = currentEdge->next;
+            continue;
+        }
+        currentEdge->next = malloc(sizeof(Edge));
+        currentEdge->next->index = edge2;
+        currentEdge->next->next = NULL;
+        currentEdge->next->weight = weight;
+        break;
+    }
+    currentEdge = &graph->adjList[edge2];
+    while(true){
+        if(currentEdge->next != NULL){
+            currentEdge = currentEdge->next;
+            continue;
+        }
+        currentEdge->next = malloc(sizeof(Edge));
+        currentEdge->next->index = edge1;
+        currentEdge->next->next = NULL;
+        currentEdge->next->weight = weight;
+        break;
     }
 }
 
 void destroyGraph(Graph *graph) {
     free(graph->adjList);
-    graph = NULL;
+    // TODO: Free all edges
 }
 
 #endif //INF236_CA2_GRAPH_H
