@@ -2,7 +2,8 @@
 #define INF236_CA2_TASK1_H
 
 #include "graph.h"
+#include "completeGraph.h"
 
-void bellmanFord(Graph *graph, long startVertex, float *distanceArray, long *prevArray);
+void bellmanFord(CompleteGraph *graph, unsigned int startVertex);
 
 #endif //INF236_CA2_TASK1_H
