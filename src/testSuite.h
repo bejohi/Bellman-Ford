@@ -3,7 +3,6 @@
 
 #include <printf.h>
 #include <stdbool.h>
-#include "graphTest.h"
 #include "testCompleteGraph.h"
 #include "testTask1.h"
 
@@ -20,8 +19,6 @@ static void assertTrue(bool result, char *testName) {
 
 void runTestSuite() {
     printf("RUN Test Suite\n");
-    assertTrue(test_createGraph(), "test_createGraph");
-    assertTrue(test_addEdge(), "test_addEdge");
     assertTrue(test_createCompleteGraph(), "test_createCompleteGraph");
     assertTrue(test_bellmanFord(),"test_bellmanFord");
     printf("%d tests run \n", testCounter);
