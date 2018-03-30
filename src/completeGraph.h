@@ -43,4 +43,6 @@ CompleteGraph createCompleteGraph(unsigned int size);
  */
 void addEdgeCompleteGraph(CompleteGraph *graph, unsigned int startVertex, unsigned int endVertex, float weight);
 
+inline void initArrays(float *distanceArray, unsigned int* prevArray, long size);
+
 #endif //INF236_CA2_COMPLETEGRAPH_H

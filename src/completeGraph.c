@@ -1,5 +1,16 @@
 #include "completeGraph.h"
 
+// TODO: Use better values.
+#define INFINIT_DISTANCE 1000000
+#define NO_PREV 100000
+
+inline void initArrays(float *distanceArray, unsigned int* prevArray, long size){
+    for(unsigned long i = 0; i < size; i++){
+        distanceArray[i] = INFINIT_DISTANCE;
+        prevArray[i] = NO_PREV;
+    }
+}
+
 CompleteGraph createCompleteGraph(unsigned int size) {
     if (size > MAX_GRAPH_SIZE) {
         size = MAX_GRAPH_SIZE;
