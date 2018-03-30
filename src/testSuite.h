@@ -1,10 +1,10 @@
 #ifndef INF236_CA2_TEST_H
 #define INF236_CA2_TEST_H
 
-#include <printf.h>
+#include <stdio.h>
 #include <stdbool.h>
 #include "testCompleteGraph.h"
-#include "testTask1.h"
+#include "testBellmanForcCompleteGraphSequential.h"
 
 static unsigned int testCounter = 0;
 

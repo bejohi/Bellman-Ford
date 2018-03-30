@@ -1,4 +1,4 @@
-#include "testTask1.h"
+#include "testBellmanForcCompleteGraphSequential.h"
 
 bool test_bellmanFord() {
     // Arrange

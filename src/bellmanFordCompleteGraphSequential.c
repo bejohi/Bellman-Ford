@@ -1,5 +1,4 @@
-#include <stdbool.h>
-#include "task1.h"
+#include "bellmanFordCompleteGraphSequential.h"
 
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
@@ -12,12 +11,14 @@ inline static void initArrays(float *distanceArray, unsigned int* prevArray, lon
     }
 }
 
-void bellmanFord(CompleteGraph* graph, unsigned int startVertex){
+double bellmanFord(CompleteGraph* graph, unsigned int startVertex){
     if(!graph || !graph->adjMatrix || !graph->predecessor || !graph->dist){
-        return;
+        return -1;
     }
     initArrays(graph->dist,graph->predecessor,graph->size);
     graph->dist[startVertex] = 0;
+    double starttime, endtime;
+    starttime = omp_get_wtime();
     for(unsigned int n = 0; n < graph->size; n++){
         for(unsigned int y = 0; y < graph->size; y++){
             for(unsigned int x = 0; x < graph->size; x++){
@@ -29,4 +30,6 @@ void bellmanFord(CompleteGraph* graph, unsigned int startVertex){
             }
         }
     }
+    endtime = omp_get_wtime();
+    return endtime - starttime;
 }
