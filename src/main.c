@@ -1,12 +1,9 @@
-#include <stdio.h>
-#include "testGraph.h"
+#include "test.h"
 #include <stdbool.h>
-
 #define TEST_MODE true
 
-
-int main() {
-    if (TEST_MODE) {
+int main(){
+    if(TEST_MODE){
         runTestSuite();
     }
 }

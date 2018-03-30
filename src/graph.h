@@ -1,58 +1,33 @@
-#ifndef INF236_CA2_ADJMATRIX_H
-#define INF236_CA2_ADJMATRIX_H
+#ifndef INF236_CA2_GRAPH_H
+#define INF236_CA2_GRAPH_H
+
 
 #include <stdlib.h>
-#include <math.h>
 
-#define maxMatrixSize 10000
-#define noEdge -0
+#define EDGE_NOT_INIT (-1)
 
 typedef struct Graph {
-    unsigned int size;
-    double **adjMatrix;
-    bool isBidirectional;
-
+    unsigned long numberOfVertices;
+    unsigned long numberOfEdges;
+    unsigned long edgeListSize;
+    long long *edgeList;
 } Graph;
 
-
-Graph createGraph(unsigned int numberOfVertices) {
-    if (numberOfVertices > maxMatrixSize) {
-        numberOfVertices = maxMatrixSize;
-    }
+Graph createGraph(unsigned long numberOfVertices, unsigned long numberOfEdges) {
     Graph graph = {};
-    graph.size = numberOfVertices;
-    graph.adjMatrix = (double **) malloc(numberOfVertices * sizeof(double *));
-    for (unsigned int i = 0; i < numberOfVertices; i++) {
-        graph.adjMatrix[i] = (double *) malloc(numberOfVertices * sizeof(double));
-        for (unsigned int x = 0; x < numberOfVertices; x++) {
-            graph.adjMatrix[i][x] = noEdge;
-        }
+    graph.numberOfEdges = numberOfEdges;
+    graph.numberOfVertices = numberOfVertices;
+    graph.edgeListSize = numberOfEdges * 3;
+    graph.edgeList = (long long *) malloc(sizeof(long) * graph.edgeListSize);
+    for(unsigned long i = 0; i < graph.edgeListSize; i++){
+        graph.edgeList[i] = EDGE_NOT_INIT;
     }
-    graph.isBidirectional = true;
+
     return graph;
 }
 
 void destroyGraph(Graph *graph) {
-    for (unsigned int i = 0; i < graph->size; i++) {
-        if (graph->adjMatrix[i] != NULL) {
-            free(graph->adjMatrix[i]);
-        }
-    }
-    if (graph->adjMatrix != NULL) {
-        free(graph->adjMatrix);
-    }
+    free(graph->edgeList);
 }
 
-void addEdge(Graph *graph, unsigned int vertex1, unsigned int vertex2, double weight) {
-    if (graph->size <= vertex1 || graph->size <= vertex2) {
-        return;
-    }
-    graph->adjMatrix[vertex1][vertex2] = weight;
-
-    if (graph->isBidirectional) {
-        graph->adjMatrix[vertex2][vertex1] = weight;
-    }
-}
-
-
-#endif //INF236_CA2_ADJMATRIX_H
+#endif //INF236_CA2_GRAPH_H

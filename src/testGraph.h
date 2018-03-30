@@ -1,6 +1,0 @@
-#ifndef INF236_CA2_TESTGRAPH_H
-#define INF236_CA2_TESTGRAPH_H
-
-void runTestSuite();
-
-#endif //INF236_CA2_TESTGRAPH_H
