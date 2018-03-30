@@ -1,7 +1,3 @@
-//
-// Created by Jonas Hielscher on 30.03.18.
-//
-
 #ifndef INF236_CA2_TEST_H
 #define INF236_CA2_TEST_H
 
@@ -21,6 +17,7 @@ static void assertTrue(bool result, char *testName) {
 void runTestSuite(){
     printf("RUN Test Suite\n");
     assertTrue(test_createGraph(),"test_createGraph");
+    assertTrue(test_addEdge(),"test_addEdge");
     printf("%d tests run \n", testCounter);
 }
 
