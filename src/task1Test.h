@@ -5,6 +5,6 @@
 #include "graph.h"
 #include "task1.h"
 
-bool testBellmannFord();
+bool testBellmanFord();
 
 #endif //INF236_CA2_TASK1TEST_H

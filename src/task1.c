@@ -11,8 +11,8 @@ static void initArrays(long long *distanceArray, unsigned long* prevArray, unsig
     }
 }
 
-void bellmannFord(Graph *graph, unsigned long startVertex, long long *distanceArray, unsigned long* prevArray){
-    if(!graph || !graph->edgeList){
+void bellmanFord(Graph *graph, unsigned long startVertex, long long *distanceArray, unsigned long *prevArray){
+    if(!graph || !graph->edgeList || !distanceArray || !prevArray){
         return;
     }
     initArrays(distanceArray,prevArray,graph->numberOfVertices);
