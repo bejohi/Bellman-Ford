@@ -1,5 +1,5 @@
-# INF236_CA2
-INF236 (Parallel Programming) University of Bergen - Assignment 2 - BellmanFord Shortest Path algorithm in 3 forms: 1. sequential, 2.
-parallel with OpenMp, 3. parallel with nvcc (CUDA)
+# Bellman-Ford complete graph parallel
+### Implementations of the [Bellman-Ford](https://de.wikipedia.org/wiki/Bellman-Ford-Algorithmus) Algorithm for complete graphs. Compares a sequential implementation with a parallel cpu and a parallel gpu version.
 
-
+## Requirements
+- [gcc](https://de.wikipedia.org/wiki/GNU_Compiler_Collection) with [openmp](https://de.wikipedia.org/wiki/OpenMP)
