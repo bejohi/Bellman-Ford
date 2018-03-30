@@ -7,9 +7,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include "completeGraph.h"
+#include "bellmanFordCompleteGraphSequential.h"
 #include <math.h>
 #include <time.h>
 
-CompleteGraph createRandomCompleteGraph(unsigned int size);
+void printReportBellmanFordCompleteGraphSequential(unsigned int* graphSizeArray, unsigned int arrSize);
 
 #endif //INF236_CA2_REPORTTOOL_H

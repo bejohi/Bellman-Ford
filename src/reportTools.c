@@ -3,7 +3,7 @@
 #define setRandomSeed() (srand((unsigned)time(NULL)))
 #define randomFloat() ((float)rand()/RAND_MAX)
 
-CompleteGraph createRandomCompleteGraph(unsigned int size){
+static CompleteGraph buildRandomCompleteGraph(unsigned int size){
     CompleteGraph graph = createCompleteGraph(size);
     if(graph.error){
         return graph;
@@ -17,4 +17,23 @@ CompleteGraph createRandomCompleteGraph(unsigned int size){
     }
 
     return graph;
+}
+
+
+void printReportBellmanFordCompleteGraphSequential(unsigned int* graphSizeArray, unsigned int arrSize){
+    if(!graphSizeArray){
+        return;
+    }
+    for(unsigned int i = 0; i < arrSize; i++){
+        printf("Creating random graph with number of edges = %d\n",graphSizeArray[i] * graphSizeArray[i]);
+        CompleteGraph graph = buildRandomCompleteGraph(graphSizeArray[i]);
+        if(graph.error){
+            printf("ERROR: graph could not be build with vertex number %d\n",graphSizeArray[i]);
+            return;
+        }
+        printf("Calculating...\n");
+        double bellmanFordTime = bellmanFord(&graph,0);
+        printf("sequential;numberOfVertices=%d;duration=%lf\n",graphSizeArray[i],bellmanFordTime);
+        destroyCompleteGraph(&graph);
+    }
 }
