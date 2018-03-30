@@ -20,10 +20,12 @@ static void assertTrue(bool result, char *testName) {
 }
 
 bool runTestSuite() {
+    printf("-------------\n");
     printf("RUN Test Suite\n");
     assertTrue(test_createCompleteGraph(), "test_createCompleteGraph");
     assertTrue(test_bellmanFord(),"test_bellmanFord");
     printf("%d tests run \n", testCounter);
+    printf("-------------\n");
     return !testFailed;
 }
 

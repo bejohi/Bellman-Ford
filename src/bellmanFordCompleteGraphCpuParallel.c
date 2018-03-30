@@ -1,7 +1,7 @@
 #include "bellmanFordCompleteGraphCpuParallel.h"
 
 
-double bellmanFord(CompleteGraph *graph, unsigned int startVertex, unsigned int numberOfThreads) {
+double bellmanFordParallelCpu(CompleteGraph *graph, unsigned int startVertex, unsigned int numberOfThreads) {
     if (!graph || !graph->adjMatrix || !graph->predecessor || !graph->dist) {
         return -1;
     }
