@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include "graphTest.h"
 #include "task1Test.h"
+#include "testCompleteGraph.h"
 
 static unsigned int testCounter = 0;
 
@@ -20,6 +21,7 @@ void runTestSuite(){
     assertTrue(test_createGraph(),"test_createGraph");
     assertTrue(test_addEdge(),"test_addEdge");
     assertTrue(testBellmanFord(),"testBellmanFord");
+    assertTrue(test_createCompleteGraph(), "test_createCompleteGraph");
     printf("%d tests run \n", testCounter);
 }
 

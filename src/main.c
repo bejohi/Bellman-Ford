@@ -1,5 +1,5 @@
 #include <stdbool.h>
-#include "test.h"
+#include "testSuite.h"
 
 #define TEST_MODE true
 
