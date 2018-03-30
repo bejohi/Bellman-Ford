@@ -8,16 +8,16 @@
 // TODO: Check suspicious casting from long long to unsigned long
 
 typedef struct Graph {
-    unsigned long numberOfVertices;
-    unsigned long numberOfEdges;
-    unsigned long edgeListSize;
-    unsigned long edgePointer;
-    long long *edgeList;
+    long numberOfVertices;
+    long numberOfEdges;
+    long edgeListSize;
+    long edgePointer;
+    float *edgeList;
 } Graph;
 
-Graph createGraph(unsigned long numberOfVertices, unsigned long numberOfEdges);
+Graph createGraph(long numberOfVertices, long numberOfEdges);
 
-void addEdge(Graph *graph, unsigned long vertex1, unsigned long vertex2, long long weight);
+void addEdge(Graph *graph, long vertex1, long vertex2, float weight);
 
 void destroyGraph(Graph *graph);
 

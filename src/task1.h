@@ -3,6 +3,6 @@
 
 #include "graph.h"
 
-void bellmanFord(Graph *graph, unsigned long startVertex, long long *distanceArray, unsigned long *prevArray);
+void bellmanFord(Graph *graph, long startVertex, float *distanceArray, long *prevArray);
 
 #endif //INF236_CA2_TASK1_H

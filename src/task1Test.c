@@ -8,8 +8,8 @@ bool testBellmanFord() {
     addEdge(&graph, 0, 3, 5);
     addEdge(&graph, 3, 2, 10);
     addEdge(&graph, 2, 4, 5);
-    long long *distanceArray = (long long *) malloc(sizeof(long long) * graph.numberOfVertices);
-    unsigned long *prevArray = (unsigned long *) malloc(sizeof(unsigned long) * graph.numberOfVertices);
+    float *distanceArray = (float *) malloc(sizeof(float) * graph.numberOfVertices);
+    long *prevArray = (long *) malloc(sizeof(long) * graph.numberOfVertices);
 
     // Act
     bellmanFord(&graph, 0, distanceArray, prevArray);
