@@ -33,7 +33,7 @@ void createReportParallelCpu(Report *report) {
                 return;
             }
             double bellmanFordTime = bellmanFordParallelCpu(&graph, 0,report->threadCases[threadPtr]);
-            printf("parallelCpu;numberOfVertices=%d;numberOfEdges=%d,threads=%d,duration=%lf\n", numberOfVertices,
+            printf("parallelCpu;numberOfVertices=%d;numberOfEdges=%d;threads=%d;duration=%lf\n", numberOfVertices,
                    numberOfVertices * numberOfVertices, report->threadCases[threadPtr],bellmanFordTime);
             destroyCompleteGraph(&graph);
         }
@@ -54,7 +54,7 @@ void printReportBellmanFordCompleteGraphSequential(unsigned int *graphSizeArray,
         }
         if (DEBUG_MODE) printf("Calculating...\n");
         double bellmanFordTime = bellmanFord(&graph, 0);
-        printf("sequential;numberOfVertices=%d;numberOfEdges=%d,duration=%lf\n", graphSizeArray[i],
+        printf("sequential;numberOfVertices=%d;numberOfEdges=%d;duration=%lf\n", graphSizeArray[i],
                graphSizeArray[i] * graphSizeArray[i], bellmanFordTime);
         destroyCompleteGraph(&graph);
     }
