@@ -10,7 +10,7 @@ static inline float compareAndSwap(float *ptr, float oldValue, float newValue) {
 
 static inline void relax(float *distanceArray, float weight, unsigned int vertex1, unsigned int vertex2) {
     if (distanceArray[vertex1] + weight < distanceArray[vertex2]) {
-        compareAndSwap(&distanceArray[vertex2], distanceArray[vertex2], distanceArray[vertex1] + weight);
+        distanceArray[vertex2] = distanceArray[vertex1] + weight;
     }
 }
 
@@ -23,22 +23,24 @@ double bellmanFordParallelCpu(CompleteGraph *graph, unsigned int startVertex, un
     graph->dist[startVertex] = 0;
     double starttime, endtime;
 
-
+    register float **matrix = graph->adjMatrix;
+    register unsigned int size = graph->size;
+    register float *dist = graph->dist;
     omp_set_num_threads(numberOfThreads);
     bool finished;
     starttime = omp_get_wtime();
-    for (unsigned int n = 0; n < graph->size; n++) {
+    for (unsigned int n = 0; n < size; n++) {
         finished = true;
 #pragma omp parallel for
-        for (unsigned int y = 0; y < graph->size; y++) {
-            for (unsigned int x = 0; x < graph->size; x++) {
-                float weight = graph->adjMatrix[y][x];
-                relax(graph->dist, weight, y, x);
-                graph->predecessor[x] = y;
+        for (unsigned int y = 0; y < size; y++) {
+            for (unsigned int x = 0; x < size; x++) {
+                float weight = matrix[y][x];
+                relax(dist, weight, y, x);
+                //graph->predecessor[x] = y;
                 finished = false;
             }
         }
-        if(finished){
+        if (finished) {
             break;
         }
     }
