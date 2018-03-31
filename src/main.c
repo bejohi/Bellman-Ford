@@ -6,8 +6,7 @@
 #define REPORT_MODE true
 
 static inline Report createReportStruct(){
-    Report report = {};
-    report.verticesCasesSize = 7;
+    Report report = {.verticesCasesSize = 7, .threadCasesSize = 7};
     report.verticesCases[0] = 10;
     report.verticesCases[1] = 100;
     report.verticesCases[2] = 1000;
@@ -15,14 +14,13 @@ static inline Report createReportStruct(){
     report.verticesCases[4] = 3000;
     report.verticesCases[5] = 4000;
     report.verticesCases[6] = 10000;
-    report.threadCasesSize = 7;
     report.threadCases[0] = 1;
     report.threadCases[1] = 2;
-    report.threadCases[3] = 4;
-    report.threadCases[4] = 8;
-    report.threadCases[5] = 16;
-    report.threadCases[6] = 32;
-    report.threadCases[7] = 64;
+    report.threadCases[2] = 4;
+    report.threadCases[3] = 8;
+    report.threadCases[4] = 16;
+    report.threadCases[5] = 32;
+    report.threadCases[6] = 64;
     return report;
 
 }
