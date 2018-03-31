@@ -8,15 +8,21 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
     graph->dist[startVertex] = 0;
     double starttime, endtime;
     starttime = omp_get_wtime();
+    bool finished;
     for (unsigned int n = 0; n < graph->size; n++) {
+        finished = true;
         for (unsigned int y = 0; y < graph->size; y++) {
             for (unsigned int x = 0; x < graph->size; x++) {
                 float weight = graph->adjMatrix[y][x];
                 if (graph->dist[y] + weight < graph->dist[x]) {
                     graph->dist[x] = graph->dist[y] + weight;
                     graph->predecessor[x] = y;
+                    finished = false;
                 }
             }
+        }
+        if(finished){
+            break;
         }
     }
     endtime = omp_get_wtime();
