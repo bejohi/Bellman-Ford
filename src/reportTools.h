@@ -20,7 +20,7 @@ typedef struct Report{
     unsigned int verticesCasesSize;
     unsigned int threadCases[MAX_THREAD_CASES];
     unsigned int threadCasesSize;
-    char* report;
+    unsigned int numberOfRuns;
 } Report;
 
 void createReportParallelCpu(Report* report);

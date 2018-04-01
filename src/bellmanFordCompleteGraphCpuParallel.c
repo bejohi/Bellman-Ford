@@ -1,20 +1,5 @@
 #include "bellmanFordCompleteGraphCpuParallel.h"
 
-static inline float compareAndSwap(float *ptr, float oldValue, float newValue) {
-    float tmp = *ptr;
-    if (*ptr == oldValue || *ptr > newValue) {
-        *ptr = newValue;
-    }
-    return tmp;
-}
-
-static inline void relax(float *distanceArray, float weight, unsigned int vertex1, unsigned int vertex2) {
-    if (distanceArray[vertex1] + weight < distanceArray[vertex2]) {
-        distanceArray[vertex2] = distanceArray[vertex1] + weight;
-    }
-}
-
-
 double bellmanFordParallelCpu(CompleteGraph *graph, unsigned int startVertex, unsigned int numberOfThreads) {
     if (!graph || !graph->adjMatrix || !graph->predecessor || !graph->dist) {
         return -1;

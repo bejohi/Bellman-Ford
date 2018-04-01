@@ -60,6 +60,8 @@ void addEdgeCompleteGraph(CompleteGraph *graph, unsigned int startVertex, unsign
 
 }
 
+
+
 void destroyCompleteGraph(CompleteGraph *completeGraph) {
     if (!completeGraph) {
         return;
