@@ -24,7 +24,7 @@ typedef struct Report{
 } Report;
 
 void createReportParallelCpu(Report* report);
-
+void createReport(Report *report);
 void printReportBellmanFordCompleteGraphSequential(unsigned int* graphSizeArray, unsigned int arrSize);
 
 #endif //INF236_CA2_REPORTTOOL_H

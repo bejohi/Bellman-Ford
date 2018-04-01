@@ -10,21 +10,21 @@ static void cpyAdjMatrix(CompleteGraph *graph, float **newAdjMatrix) {
         newAdjMatrix = (float **) malloc(sizeof(float *) * graph->size);
     }
     for (unsigned int i = 0; i < graph->size; i++) {
-        newAdjMatrix[i] = (float*) malloc(sizeof(float) * graph->size);
+        newAdjMatrix[i] = (float *) malloc(sizeof(float) * graph->size);
     }
 
-    for(unsigned int y = 0; y < graph->size; y++){
-        memcpy(newAdjMatrix[y],graph->adjMatrix[y],graph->size);
+    for (unsigned int y = 0; y < graph->size; y++) {
+        memcpy(newAdjMatrix[y], graph->adjMatrix[y], graph->size);
     }
 }
 
-static bool cmpGraphMatrix(CompleteGraph *graph, float **adjMatrix){
-    if(!graph || !adjMatrix){
+static bool cmpGraphMatrix(CompleteGraph *graph, float **adjMatrix) {
+    if (!graph || !adjMatrix) {
         return false;
     }
 
     for (unsigned int i = 0; i < graph->size; i++) {
-        if(memcmp(graph->adjMatrix[i], adjMatrix[i],graph->size) != 0){
+        if (memcmp(graph->adjMatrix[i], adjMatrix[i], graph->size) != 0) {
             return false;
         }
     }
@@ -53,18 +53,28 @@ void createReport(Report *report) {
     if (!report) {
         return;
     }
-    for (unsigned int runPtr = 0; runPtr < report->numberOfRuns; runPtr++) {
+    for (unsigned int runPtr = 1; runPtr <= report->numberOfRuns; runPtr++) {
         for (unsigned int verticesPtr = 0; verticesPtr < report->verticesCasesSize; verticesPtr++) {
             unsigned int numberOfVertices = report->verticesCases[verticesPtr];
+            unsigned int numberOfEdges = numberOfVertices * numberOfVertices;
             CompleteGraph graph = buildRandomCompleteGraph(numberOfVertices);
-            float** cmpMatrix = NULL;
-            double resultTime = bellmanFord(&graph,0);
-            cpyAdjMatrix(&graph,cmpMatrix);
-
+            float **cmpMatrix = (float **) malloc(sizeof(float *) * numberOfVertices);
+            double resultTime = bellmanFord(&graph, 0);
+            cpyAdjMatrix(&graph, cmpMatrix);
+            printf("seq;run=%d;time=%lf;vertices=%d;edges=%d\n", runPtr, resultTime, numberOfVertices, numberOfEdges);
             for (unsigned int threadPtr = 0; threadPtr < report->threadCasesSize; threadPtr++) {
+                unsigned int numberOfThreads = report->threadCases[threadPtr];
+                resultTime = bellmanFordParallelCpu(&graph, numberOfVertices, numberOfThreads);
+                bool checkEqual = cmpGraphMatrix(&graph, cmpMatrix);
+                printf("parallelCpu;run=%d;time=%lf;vertices=%d;edges=%d;threads=%d;checkEqual=%d\n", runPtr,
+                       resultTime, numberOfVertices, numberOfEdges, numberOfThreads, checkEqual);
 
             }
             destroyCompleteGraph(&graph);
+            for (unsigned int i = 0; i < numberOfVertices; i++) {
+                free(cmpMatrix[i]);
+            }
+            free(cmpMatrix);
         }
 
     }

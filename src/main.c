@@ -6,7 +6,7 @@
 #define REPORT_MODE true
 
 static inline Report createReportStruct(){
-    Report report = {.verticesCasesSize = 7, .threadCasesSize = 8};
+    Report report = {.verticesCasesSize = 7, .threadCasesSize = 8, .numberOfRuns = 10};
     report.verticesCases[0] = 10;
     report.verticesCases[1] = 100;
     report.verticesCases[2] = 1000;
@@ -21,7 +21,7 @@ static inline Report createReportStruct(){
     report.threadCases[4] = 16;
     report.threadCases[5] = 32;
     report.threadCases[6] = 36;
-    report.threadCases[6] = 64;
+    report.threadCases[7] = 64;
     return report;
 
 }
@@ -34,10 +34,8 @@ int main() {
     }
 
     if(REPORT_MODE){
-        unsigned int verticesSize[7] = {10,100,1000,2000,4000,8000,10000};
-        printReportBellmanFordCompleteGraphSequential(verticesSize,7);
         Report report = createReportStruct();
+        //createReport(&report);
         createReportParallelCpu(&report);
-
     }
 }

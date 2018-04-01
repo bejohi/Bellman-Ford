@@ -4,8 +4,8 @@
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
 
-inline void initArrays(float *distanceArray, unsigned int* prevArray, long size){
-    for(unsigned long i = 0; i < size; i++){
+inline void initArrays(float *distanceArray, unsigned int *prevArray, long size) {
+    for (unsigned long i = 0; i < size; i++) {
         distanceArray[i] = INFINIT_DISTANCE;
         prevArray[i] = NO_PREV;
     }
@@ -32,12 +32,12 @@ CompleteGraph createCompleteGraph(unsigned int size) {
             destroyCompleteGraph(&completeGraph);
             return (CompleteGraph) {.error = true};
         }
-        if(i == 0){
+        if (i == 0) {
             for (unsigned int x = 0; x < size; x++) {
                 completeGraph.adjMatrix[i][x] = 0;
             }
         } else {
-            memcpy(completeGraph.adjMatrix[i],completeGraph.adjMatrix[0],sizeof(float) * size);
+            memcpy(completeGraph.adjMatrix[i], completeGraph.adjMatrix[0], sizeof(float) * size);
         }
 
     }
@@ -48,37 +48,29 @@ void addEdgeCompleteGraph(CompleteGraph *graph, unsigned int startVertex, unsign
     if (!graph) {
         return;
     }
-    if(!graph->adjMatrix || endVertex >= graph->size || startVertex >= graph->size){
+    if (!graph->adjMatrix || endVertex >= graph->size || startVertex >= graph->size) {
         graph->error = true;
         return;
     }
 
     graph->adjMatrix[startVertex][endVertex] = weight;
-    if(graph->isDirected){
+    if (graph->isDirected) {
         graph->adjMatrix[endVertex][startVertex] = weight;
     }
 
 }
 
 
-
 void destroyCompleteGraph(CompleteGraph *completeGraph) {
-    if (!completeGraph) {
-        return;
-    }
-    if (completeGraph->predecessor) {
-        free(completeGraph->predecessor);
-    }
-    if (completeGraph->dist) {
-        free(completeGraph->dist);
-    }
-    if (completeGraph->adjMatrix) {
-        for (unsigned int i = 0; i < completeGraph->size; i++) {
-            if (completeGraph->adjMatrix[i]) {
-                free(completeGraph->adjMatrix[i]);
-            }
+    free(completeGraph->predecessor);
+    free(completeGraph->dist);
+    for (unsigned int i = 0; i < completeGraph->size; i++) {
+        if (completeGraph->adjMatrix[i]) {
+            free(completeGraph->adjMatrix[i]);
         }
-        free(completeGraph->adjMatrix);
     }
+    free(completeGraph->adjMatrix);
 }
+
+
 
