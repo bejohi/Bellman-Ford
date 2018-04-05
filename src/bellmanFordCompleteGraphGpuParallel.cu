@@ -23,7 +23,9 @@ CompleteGraph createCompleteGraph(unsigned int size) {
 
     if (!completeGraph.dist || !completeGraph.predecessor || !completeGraph.adjMatrix) {
         destroyCompleteGraph(&completeGraph);
-        return (CompleteGraph) {.error = true};
+        CompleteGraph errorGraph = {};
+        errorGraph.error = true;
+        return errorGraph;
     }
 
     unsigned int i, x;
@@ -32,7 +34,9 @@ CompleteGraph createCompleteGraph(unsigned int size) {
         completeGraph.adjMatrix[i] = (float *) malloc(sizeof(float) * size);
         if (!completeGraph.adjMatrix[i]) {
             destroyCompleteGraph(&completeGraph);
-            return (CompleteGraph) {.error = true};
+            CompleteGraph errorGraph = {};
+            errorGraph.error = true;
+            return errorGraph;
         }
         if (i == 0) {
             for (x = 0; x < size; x++) {
