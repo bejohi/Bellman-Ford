@@ -18,48 +18,29 @@ CompleteGraph createCompleteGraph(unsigned int size) {
     CompleteGraph completeGraph = {.size = size, .isDirected = false, .error = false};
 
     completeGraph.dist = (float *) malloc(sizeof(float) * size);
-    completeGraph.predecessor = (unsigned int *) malloc(sizeof(unsigned int) * size);
-    completeGraph.adjMatrix = (float **) malloc(sizeof(float *) * size);
+    completeGraph.adjMatrix = (float *) malloc(sizeof(float) * size * size);
 
-    if (!completeGraph.dist || !completeGraph.predecessor || !completeGraph.adjMatrix) {
-        destroyCompleteGraph(&completeGraph);
-        CompleteGraph errorGraph = {};
-        errorGraph.error = true;
-        return errorGraph;
+    if (!completeGraph.dist || !completeGraph.adjMatrix) {
+        exit(-101);
     }
 
     unsigned int i, x;
 
-    for (i = 0; i < size; i++) {
-        completeGraph.adjMatrix[i] = (float *) malloc(sizeof(float) * size);
-        if (!completeGraph.adjMatrix[i]) {
-            destroyCompleteGraph(&completeGraph);
-            CompleteGraph errorGraph = {};
-            errorGraph.error = true;
-            return errorGraph;
-        }
-        if (i == 0) {
-            for (x = 0; x < size; x++) {
-                completeGraph.adjMatrix[i][x] = 0;
-            }
-        } else {
-            memcpy(completeGraph.adjMatrix[i], completeGraph.adjMatrix[0], sizeof(float) * size);
-        }
-
+    for (i = 0; i < size * size; i++) {
+        completeGraph.adjMatrix[i] = 0;
     }
     return completeGraph;
 }
 
 void addEdgeCompleteGraph(CompleteGraph *graph, unsigned int startVertex, unsigned int endVertex, float weight) {
     if (!graph) {
-        return;
+        exit(-103);
     }
     if (!graph->adjMatrix || endVertex >= graph->size || startVertex >= graph->size) {
-        graph->error = true;
-        return;
+        exit(-102);
     }
 
-    graph->adjMatrix[startVertex][endVertex] = weight;
+    graph->adjMatrix[startVertex + ] = weight;
     if (graph->isDirected) {
         graph->adjMatrix[endVertex][startVertex] = weight;
     }
@@ -80,17 +61,43 @@ void destroyCompleteGraph(CompleteGraph *completeGraph) {
 }
 
 
+__global__ innerBellmanFord(float *adjMatrix, float *dist, unsigned int size, bool* finished) {
+    unsigned int x,y,z;
+    float weight = adjMatrix[z];
+    if (dist[y] + weight < dist[x]) {
+        dist[x] = dist[y] + weight;
+        finished = false;
+        /*
+        i = 100;
+        N = 32;
+        row = i / N
+        col = i % N
+        */
+
+    }
+}
+
 double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
+
     if (!graph || !graph->adjMatrix || !graph->predecessor || !graph->dist) {
         return -1;
     }
+
     initArrays(graph->dist, graph->predecessor, graph->size);
     graph->dist[startVertex] = 0;
     double starttime, endtime;
     bool finished;
-    unsigned int n, y, x;
+    unsigned int n, y, x, i;
+    float** gpuAdjMatrix;
+    float* gpuDistArray;
+
+    CHECK(cudaMalloc((float*) gpuAdjMatrix, sizeof(float) * graph->size * graph->size));
+
+
     for (n = 0; n < graph->size; n++) {
         finished = true;
+
+        //innerBellmanFord()
         for (y = 0; y < graph->size; y++) {
             for (x = 0; x < graph->size; x++) {
                 float weight = graph->adjMatrix[y][x];
@@ -108,6 +115,15 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
     return -1;
 }
 
-int main(){
+int main() {
+    printf("Starting GPU Test...\n");
+
+    // init locals
+    int dev = 0;
+    unsigned int n = 10000;
+    unsigned int blockSize, threadsPerBlock;
+
+    // GPU Setup
+    CHECK(cudaSetDevice(dev));
 
 }

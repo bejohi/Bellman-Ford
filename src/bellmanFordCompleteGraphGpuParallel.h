@@ -1,11 +1,42 @@
 #ifndef INF236_CA2_BELLMANFORDCOMPLETEGRAPHGPU_H
 #define INF236_CA2_BELLMANFORDCOMPLETEGRAPHGPU_H
 
-#include "completeGraph.h"
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <float.h>
 #include <string.h>
+#include <sys/time.h>
 
+
+typedef struct CompleteGraph {
+    unsigned int size; //< the number of vertices.
+    bool isDirected; //< indicates if the graph is directed.
+    bool error; //< a flag which will be true if any function call on the graph struct causes an error.
+    float *adjMatrix1D; //< a 1D "matrix" with the dimensions of size * size, where every colume indicates the distance between 2 vertices.
+    float *dist; //< Stores the distance to a start vertex. Can be filled with shortest path algorithm.
+} CompleteGraph;
+
+// From Professional CUDA C Programming 2015
+
+#define CHECK(call)                                                            \
+{                                                                              \
+    const cudaError_t error = call;                                            \
+    if (error != cudaSuccess)                                                  \
+    {                                                                          \
+        fprintf(stderr, "Error: %s:%d, ", __FILE__, __LINE__);                 \
+        fprintf(stderr, "code: %d, reason: %s\n", error,                       \
+                cudaGetErrorString(error));                                    \
+        exit(-101);                                                               \
+    }                                                                          \
+}
+
+inline double seconds()
+{
+    struct timeval tp;
+    struct timezone tzp;
+    int i = gettimeofday(&tp, &tzp);
+    return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
+}
 
 #endif //INF236_CA2_BELLMANFORDCOMPLETEGRAPHGPU_H
