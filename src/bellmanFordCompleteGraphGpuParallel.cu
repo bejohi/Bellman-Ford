@@ -61,24 +61,26 @@ void destroyCompleteGraph(CompleteGraph *completeGraph) {
 }
 
 
-__global__ innerBellmanFord(float *adjMatrix, float *dist, unsigned int size, bool* finished) {
-    unsigned int x,y,z;
-    float weight = adjMatrix[z];
-    if (dist[y] + weight < dist[x]) {
-        dist[x] = dist[y] + weight;
-        finished = false;
-        /*
-        i = 100;
-        N = 32;
-        row = i / N
-        col = i % N
-        */
+__global__ innerBellmanFord(float *adjMatrix, float *dist, unsigned int size, int* finished) {
+    unsigned int x,y,currentMatrixPosition;
+    currentMatrixPosition = threadIdx.x + blockIdx.x * blockDim.x;
+    do {
+        y = currentMatrixPosition / size;
+        x = currentMatrixPosition & size;
+        float weight = adjMatrix[currentMatrxiPosition];
+        if (dist[y] + weight < dist[x]) {
+            dist[x] = dist[y] + weight;
+            finished = 0;
 
-    }
+        }
+        currentMatrixPosition += gridDim.x * blockDim.x;
+    } while(currentMatrixPosition < size * size);
+
 }
 
-double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
+double bellmanFordGpu(CompleteGraph *graph, unsigned int startVertex) {
 
+    // CPU Setup
     if (!graph || !graph->adjMatrix || !graph->predecessor || !graph->dist) {
         return -1;
     }
@@ -87,12 +89,17 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
     graph->dist[startVertex] = 0;
     double starttime, endtime;
     bool finished;
+    bool* finishedGpu;
     unsigned int n, y, x, i;
     float** gpuAdjMatrix;
     float* gpuDistArray;
 
+    // GPU Setup
     CHECK(cudaMalloc((float*) gpuAdjMatrix, sizeof(float) * graph->size * graph->size));
+    CHECK(cudaMalloc((float*) gpuDistArray, sizeof(float) * graph->size));
+    CHECK(cudaMalloc((bool*) finishedGpu, sizeof(bool)));
 
+    // TODO: Init Arrays for GPU
 
     for (n = 0; n < graph->size; n++) {
         finished = true;
