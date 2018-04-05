@@ -9,11 +9,12 @@ static void cpyAdjMatrix(CompleteGraph *graph, float **newAdjMatrix) {
     if (!newAdjMatrix) {
         newAdjMatrix = (float **) malloc(sizeof(float *) * graph->size);
     }
-    for (unsigned int i = 0; i < graph->size; i++) {
+    unsigned int i, y;
+    for (i = 0; i < graph->size; i++) {
         newAdjMatrix[i] = (float *) malloc(sizeof(float) * graph->size);
     }
 
-    for (unsigned int y = 0; y < graph->size; y++) {
+    for (y = 0; y < graph->size; y++) {
         memcpy(newAdjMatrix[y], graph->adjMatrix[y], graph->size);
     }
 }
@@ -22,8 +23,8 @@ static bool cmpGraphMatrix(CompleteGraph *graph, float **adjMatrix) {
     if (!graph || !adjMatrix) {
         return false;
     }
-
-    for (unsigned int i = 0; i < graph->size; i++) {
+    unsigned int i;
+    for (i = 0; i < graph->size; i++) {
         if (memcmp(graph->adjMatrix[i], adjMatrix[i], graph->size) != 0) {
             return false;
         }
@@ -39,9 +40,10 @@ static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
         return graph;
     }
 
+    unsigned int y, x;
     setRandomSeed();
-    for (unsigned int y = 0; y < size; y++) {
-        for (unsigned int x = 0; x < size; x++) {
+    for (y = 0; y < size; y++) {
+        for (x = 0; x < size; x++) {
             graph.adjMatrix[y][x] = randomFloat();
         }
     }
@@ -53,8 +55,9 @@ void createReport(Report *report) {
     if (!report) {
         return;
     }
-    for (unsigned int runPtr = 1; runPtr <= report->numberOfRuns; runPtr++) {
-        for (unsigned int verticesPtr = 0; verticesPtr < report->verticesCasesSize; verticesPtr++) {
+    unsigned int runPtr, verticesPtr, threadPtr, i;
+    for (runPtr = 1; runPtr <= report->numberOfRuns; runPtr++) {
+        for (verticesPtr = 0; verticesPtr < report->verticesCasesSize; verticesPtr++) {
             unsigned int numberOfVertices = report->verticesCases[verticesPtr];
             unsigned int numberOfEdges = numberOfVertices * numberOfVertices;
             CompleteGraph graph = buildRandomCompleteGraph(numberOfVertices);
@@ -62,7 +65,7 @@ void createReport(Report *report) {
             double resultTime = bellmanFord(&graph, 0);
             cpyAdjMatrix(&graph, cmpMatrix);
             printf("seq;run=%d;time=%lf;vertices=%d;edges=%d\n", runPtr, resultTime, numberOfVertices, numberOfEdges);
-            for (unsigned int threadPtr = 0; threadPtr < report->threadCasesSize; threadPtr++) {
+            for (threadPtr = 0; threadPtr < report->threadCasesSize; threadPtr++) {
                 unsigned int numberOfThreads = report->threadCases[threadPtr];
                 resultTime = bellmanFordParallelCpu(&graph, numberOfVertices, numberOfThreads);
                 bool checkEqual = cmpGraphMatrix(&graph, cmpMatrix);
@@ -71,7 +74,7 @@ void createReport(Report *report) {
 
             }
             destroyCompleteGraph(&graph);
-            for (unsigned int i = 0; i < numberOfVertices; i++) {
+            for (i = 0; i < numberOfVertices; i++) {
                 free(cmpMatrix[i]);
             }
             free(cmpMatrix);
@@ -87,8 +90,9 @@ void createReportParallelCpu(Report *report) {
     if (!report) {
         return;
     }
-    for (unsigned int threadPtr = 0; threadPtr < report->threadCasesSize; threadPtr++) {
-        for (unsigned int verticesPtr = 0; verticesPtr < report->verticesCasesSize; verticesPtr++) {
+    unsigned int threadPtr, verticesPtr;
+    for (threadPtr = 0; threadPtr < report->threadCasesSize; threadPtr++) {
+        for (verticesPtr = 0; verticesPtr < report->verticesCasesSize; verticesPtr++) {
             unsigned int numberOfVertices = report->verticesCases[verticesPtr];
             CompleteGraph graph = buildRandomCompleteGraph(numberOfVertices);
             if (graph.error) {
@@ -107,7 +111,8 @@ void printReportBellmanFordCompleteGraphSequential(unsigned int *graphSizeArray,
     if (!graphSizeArray) {
         return;
     }
-    for (unsigned int i = 0; i < arrSize; i++) {
+    unsigned int i;
+    for (i = 0; i < arrSize; i++) {
         if (DEBUG_MODE)
             printf("Creating random graph with number of edges = %d\n", graphSizeArray[i] * graphSizeArray[i]);
         CompleteGraph graph = buildRandomCompleteGraph(graphSizeArray[i]);

@@ -10,12 +10,13 @@ double bellmanFordParallelCpu(CompleteGraph *graph, unsigned int startVertex, un
     bool finished;
     omp_set_num_threads(numberOfThreads);
     starttime = omp_get_wtime();
+    unsigned int y, n, x;
 
-    for (unsigned int n = 0; n < graph->size; n++) {
+    for (n = 0; n < graph->size; n++) {
         finished = true;
 #pragma omp parallel for
-        for (unsigned int y = 0; y < graph->size; y++) {
-            for (unsigned int x = 0; x < graph->size; x++) {
+        for (y = 0; y < graph->size; y++) {
+            for (x = 0; x < graph->size; x++) {
                 float weight = graph->adjMatrix[y][x];
                 if (graph->dist[y] + weight < graph->dist[x]) {
                     graph->dist[x] = graph->dist[y] + weight;
@@ -24,7 +25,7 @@ double bellmanFordParallelCpu(CompleteGraph *graph, unsigned int startVertex, un
                 }
             }
         }
-        if(finished){
+        if (finished) {
             break;
         }
     }

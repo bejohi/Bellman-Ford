@@ -26,7 +26,9 @@ CompleteGraph createCompleteGraph(unsigned int size) {
         return (CompleteGraph) {.error = true};
     }
 
-    for (unsigned int i = 0; i < size; i++) {
+    unsigned int i;
+
+    for (i = 0; i < size; i++) {
         completeGraph.adjMatrix[i] = (float *) malloc(sizeof(float) * size);
         if (!completeGraph.adjMatrix[i]) {
             destroyCompleteGraph(&completeGraph);
@@ -64,7 +66,8 @@ void addEdgeCompleteGraph(CompleteGraph *graph, unsigned int startVertex, unsign
 void destroyCompleteGraph(CompleteGraph *completeGraph) {
     free(completeGraph->predecessor);
     free(completeGraph->dist);
-    for (unsigned int i = 0; i < completeGraph->size; i++) {
+    unsigned int i;
+    for (i = 0; i < completeGraph->size; i++) {
         if (completeGraph->adjMatrix[i]) {
             free(completeGraph->adjMatrix[i]);
         }

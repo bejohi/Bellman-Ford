@@ -9,10 +9,11 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
     double starttime, endtime;
     starttime = omp_get_wtime();
     bool finished;
-    for (unsigned int n = 0; n < graph->size; n++) {
+    unsigned int n, y, x;
+    for (n = 0; n < graph->size; n++) {
         finished = true;
-        for (unsigned int y = 0; y < graph->size; y++) {
-            for (unsigned int x = 0; x < graph->size; x++) {
+        for (y = 0; y < graph->size; y++) {
+            for (x = 0; x < graph->size; x++) {
                 float weight = graph->adjMatrix[y][x];
                 if (graph->dist[y] + weight < graph->dist[x]) {
                     graph->dist[x] = graph->dist[y] + weight;
@@ -21,7 +22,7 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
                 }
             }
         }
-        if(finished){
+        if (finished) {
             break;
         }
     }
