@@ -7,7 +7,7 @@ gpu: gbu-build
 	./bin/bellmanFordCuda
 
 gbu-build: prep
-	nvcc -o bin/bellmanFordCuda src/completeGraph.c src/bellmanFordCompleteGraphGpuParallel.c -lm
+	nvcc -o bin/bellmanFordCuda src/completeGraph.c src/bellmanFordCompleteGraphGpuParallel.cu -std=c++11 -lm
 
 
 build: prep
