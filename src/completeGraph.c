@@ -26,7 +26,7 @@ CompleteGraph createCompleteGraph(unsigned int size) {
         return (CompleteGraph) {.error = true};
     }
 
-    unsigned int i;
+    unsigned int i, x;
 
     for (i = 0; i < size; i++) {
         completeGraph.adjMatrix[i] = (float *) malloc(sizeof(float) * size);
@@ -35,7 +35,7 @@ CompleteGraph createCompleteGraph(unsigned int size) {
             return (CompleteGraph) {.error = true};
         }
         if (i == 0) {
-            for (unsigned int x = 0; x < size; x++) {
+            for (x = 0; x < size; x++) {
                 completeGraph.adjMatrix[i][x] = 0;
             }
         } else {
