@@ -5,7 +5,8 @@
 #define NO_PREV 100000
 
 inline void initArrays(float *distanceArray, unsigned int *prevArray, long size) {
-    for (unsigned long i = 0; i < size; i++) {
+    unsigned long i;
+    for (i = 0; i < size; i++) {
         distanceArray[i] = INFINIT_DISTANCE;
         prevArray[i] = NO_PREV;
     }
