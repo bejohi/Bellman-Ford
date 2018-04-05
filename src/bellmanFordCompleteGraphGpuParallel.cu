@@ -18,56 +18,34 @@ CompleteGraph createCompleteGraph(unsigned int size) {
     CompleteGraph completeGraph = {.size = size, .isDirected = false, .error = false};
 
     completeGraph.dist = (float *) malloc(sizeof(float) * size);
-    completeGraph.adjMatrix = (float *) malloc(sizeof(float) * size * size);
+    completeGraph.adjMatrix1D = (float *) malloc(sizeof(float) * size * size);
 
-    if (!completeGraph.dist || !completeGraph.adjMatrix) {
+    if (!completeGraph.dist || !completeGraph.adjMatrix1D) {
         exit(-101);
     }
 
     unsigned int i, x;
 
     for (i = 0; i < size * size; i++) {
-        completeGraph.adjMatrix[i] = 0;
+        completeGraph.adjMatrix1D[i] = 0;
     }
     return completeGraph;
 }
 
-void addEdgeCompleteGraph(CompleteGraph *graph, unsigned int startVertex, unsigned int endVertex, float weight) {
-    if (!graph) {
-        exit(-103);
-    }
-    if (!graph->adjMatrix || endVertex >= graph->size || startVertex >= graph->size) {
-        exit(-102);
-    }
-
-    graph->adjMatrix[startVertex + ] = weight;
-    if (graph->isDirected) {
-        graph->adjMatrix[endVertex][startVertex] = weight;
-    }
-
-}
-
 
 void destroyCompleteGraph(CompleteGraph *completeGraph) {
-    free(completeGraph->predecessor);
     free(completeGraph->dist);
-    unsigned int i;
-    for (i = 0; i < completeGraph->size; i++) {
-        if (completeGraph->adjMatrix[i]) {
-            free(completeGraph->adjMatrix[i]);
-        }
-    }
-    free(completeGraph->adjMatrix);
+    free(completeGraph->adjMatrix1D);
 }
 
 
-__global__ innerBellmanFord(float *adjMatrix, float *dist, unsigned int size, int* finished) {
+__global__ innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int* finished) {
     unsigned int x,y,currentMatrixPosition;
     currentMatrixPosition = threadIdx.x + blockIdx.x * blockDim.x;
     do {
         y = currentMatrixPosition / size;
         x = currentMatrixPosition & size;
-        float weight = adjMatrix[currentMatrxiPosition];
+        float weight = adjMatrix1D[currentMatrxiPosition];
         if (dist[y] + weight < dist[x]) {
             dist[x] = dist[y] + weight;
             finished = 0;
@@ -81,40 +59,30 @@ __global__ innerBellmanFord(float *adjMatrix, float *dist, unsigned int size, in
 double bellmanFordGpu(CompleteGraph *graph, unsigned int startVertex) {
 
     // CPU Setup
-    if (!graph || !graph->adjMatrix || !graph->predecessor || !graph->dist) {
+    if (!graph || !graph->adjMatrix1D|| !graph->dist) {
         return -1;
     }
 
-    initArrays(graph->dist, graph->predecessor, graph->size);
+    initArrays(graph->dist, graph->size);
     graph->dist[startVertex] = 0;
     double starttime, endtime;
     bool finished;
-    bool* finishedGpu;
+    int* finishedGpu;
     unsigned int n, y, x, i;
-    float** gpuAdjMatrix;
+    float** gpuadjMatrix1D;
     float* gpuDistArray;
 
     // GPU Setup
-    CHECK(cudaMalloc((float*) gpuAdjMatrix, sizeof(float) * graph->size * graph->size));
-    CHECK(cudaMalloc((float*) gpuDistArray, sizeof(float) * graph->size));
-    CHECK(cudaMalloc((bool*) finishedGpu, sizeof(bool)));
+    CHECK(cudaMalloc((float**) gpuadjMatrix1D, sizeof(float) * graph->size * graph->size));
+    CHECK(cudaMalloc((float**) gpuDistArray, sizeof(float) * graph->size));
+    CHECK(cudaMalloc((int*) finishedGpu, sizeof(bool)));
 
     // TODO: Init Arrays for GPU
 
     for (n = 0; n < graph->size; n++) {
-        finished = true;
+        finished = 1;
 
         //innerBellmanFord()
-        for (y = 0; y < graph->size; y++) {
-            for (x = 0; x < graph->size; x++) {
-                float weight = graph->adjMatrix[y][x];
-                if (graph->dist[y] + weight < graph->dist[x]) {
-                    graph->dist[x] = graph->dist[y] + weight;
-                    graph->predecessor[x] = y;
-                    finished = false;
-                }
-            }
-        }
         if (finished) {
             break;
         }
