@@ -4,10 +4,9 @@
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
 
-inline void initArrays(float *distanceArray, unsigned int *prevArray, long size) {
+inline void initArrays(float *distanceArray,long size) {
     for (unsigned long i = 0; i < size; i++) {
         distanceArray[i] = INFINIT_DISTANCE;
-        prevArray[i] = NO_PREV;
     }
 }
 
@@ -39,13 +38,13 @@ void destroyCompleteGraph(CompleteGraph *completeGraph) {
 }
 
 
-__global__ innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int* finished) {
+__global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int* finished) {
     unsigned int x,y,currentMatrixPosition;
     currentMatrixPosition = threadIdx.x + blockIdx.x * blockDim.x;
     do {
         y = currentMatrixPosition / size;
         x = currentMatrixPosition & size;
-        float weight = adjMatrix1D[currentMatrxiPosition];
+        float weight = adjMatrix1D[currentMatrixPosition];
         if (dist[y] + weight < dist[x]) {
             dist[x] = dist[y] + weight;
             finished = 0;
@@ -75,7 +74,7 @@ double bellmanFordGpu(CompleteGraph *graph, unsigned int startVertex) {
     // GPU Setup
     CHECK(cudaMalloc((float**) gpuadjMatrix1D, sizeof(float) * graph->size * graph->size));
     CHECK(cudaMalloc((float**) gpuDistArray, sizeof(float) * graph->size));
-    CHECK(cudaMalloc((int*) finishedGpu, sizeof(bool)));
+    CHECK(cudaMalloc((int**) finishedGpu, sizeof(bool)));
 
     // TODO: Init Arrays for GPU
 
