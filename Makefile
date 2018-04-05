@@ -7,11 +7,11 @@ gpu: gbu-build
 	./bin/bellmanFordCuda
 
 gbu-build: prep
-	nvcc -o bin/bellmanFordCuda src/completeGraph.c src/bellmanFordCompleteGraphGpuParallel.cu -std=c++11 -lm
+	nvcc -o bin/bellmanFordCuda src/bellmanFordCompleteGraphGpuParallel.cu -std=c++11 -lm
 
 
 build: prep
-	gcc -o bin/bellmanFord src/completeGraph.cpp src/bellmanFordCompleteGraphCpuParallel.c src/bellmanFordCompleteGraphSequential.c src/testBellmanForcCompleteGraphSequential.c src/testCompleteGraph.c src/reportTools.c src/main.c -fopenmp -std=c99 -lm -O3 -Wall -Wpedantic
+	gcc -o bin/bellmanFord src/completeGraph.c src/bellmanFordCompleteGraphCpuParallel.c src/bellmanFordCompleteGraphSequential.c src/testBellmanForcCompleteGraphSequential.c src/testCompleteGraph.c src/reportTools.c src/main.c -fopenmp -std=c99 -lm -O3 -Wall -Wpedantic
 
 
 prep: remove
