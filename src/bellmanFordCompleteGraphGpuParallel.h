@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/time.h>
 
+#define MAX_GRAPH_SIZE 10000
 
 typedef struct CompleteGraph {
     unsigned int size; //< the number of vertices.
