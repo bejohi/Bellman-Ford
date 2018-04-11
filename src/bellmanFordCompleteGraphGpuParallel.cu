@@ -84,9 +84,9 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
 
     // GPU Setup
     if(DEBUG) printf("CUDA malloc...\n");
-    CHECK(cudaMalloc((float **) gpuadjMatrix1D, sizeof(float) * graph->size * graph->size));
-    CHECK(cudaMalloc((float **) gpuDistArray, sizeof(float) * graph->size));
-    CHECK(cudaMalloc((int **) finishedGpu, sizeof(bool)));
+    CHECK(cudaMalloc((void **) gpuadjMatrix1D, sizeof(float) * graph->size * graph->size));
+    CHECK(cudaMalloc((void **) gpuDistArray, sizeof(float) * graph->size));
+    CHECK(cudaMalloc((void **) finishedGpu, sizeof(bool)));
 
     int grid = (graph->size * graph->size) / threadNum;
 
