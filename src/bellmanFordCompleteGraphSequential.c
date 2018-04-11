@@ -6,10 +6,10 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
     }
     initArrays(graph->dist, graph->predecessor, graph->size);
     graph->dist[startVertex] = 0;
-    double starttime, endtime;
-    starttime = omp_get_wtime();
+    time_t startTime, endTime;
     bool finished;
     unsigned int n, y, x;
+    time(&startTime);
     for (n = 0; n < graph->size; n++) {
         finished = true;
         for (y = 0; y < graph->size; y++) {
@@ -26,6 +26,6 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
             break;
         }
     }
-    endtime = omp_get_wtime();
-    return endtime - starttime;
+    time(&endTime);
+    return difftime(startTime,endTime);
 }

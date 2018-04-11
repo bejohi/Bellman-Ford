@@ -2,7 +2,7 @@
 #define INF236_CA2_TASK1_H
 
 #include "completeGraph.h"
-#include <omp.h>
+#include <time.h>
 
 /**
  * Runs the Bellman-Ford Algorithm on a given Complete Graph.
