@@ -10,6 +10,16 @@ inline void initArrays(float *distanceArray, long size) {
     }
 }
 
+void fillGraphRandom(GpuGraph *graph) {
+    if (!graph) {
+        return;
+    }
+    srand48(10);
+    for (unsigned long i = 0; i < graph->size * graph->size; i++) {
+        graph->adjMatrix1D[i] = drand48();
+    }
+}
+
 GpuGraph createGpuGraph(unsigned int size) {
     if (size > MAX_GRAPH_SIZE) {
         size = MAX_GRAPH_SIZE;
@@ -55,7 +65,7 @@ __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int s
 
 }
 
-double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int blockSize, unsigned int threadsPerBlock) {
+double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int blockSize, unsigned int threadNum) {
 
     // CPU Setup
     if (!graph || !graph->adjMatrix1D || !graph->dist) {
@@ -76,10 +86,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     CHECK(cudaMalloc((float **) gpuDistArray, sizeof(float) * graph->size));
     CHECK(cudaMalloc((int **) finishedGpu, sizeof(bool)));
 
-    int dimx = 32;
-    dim3 block;
-    dim3 grid;
-
+    int grid = (size * size) / threadsPerBlock;
 
     double time = seconds();
     for (n = 0; n < graph->size; n++) {
@@ -89,7 +96,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
         CHECK(cudaMemcpy(gpuDistArray, graph->dist, sizeof(int), cudaMemcpyHostToDevice));
         CHECK(cudaMemcpy(finishedGpu, finished, sizeof(int), cudaMemcpyHostToDevice));
 
-        innerBellmanFord <<<grid, block>>>(gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
+        innerBellmanFord << < grid, blockSize >> > (gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
         CHECK(cudaDeviceSynchronize());
 
         CHECK(cudaMemcpy(graph->adjMatrix1D, gpuadjMatrix1D, sizeof(float) * graph->size * graph->size,
@@ -103,8 +110,17 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
             break;
         }
     }
+
     time = seconds() - time;
-    return -1;
+
+    CHECK(cudaFree(gpuadjMatrix1D));
+    CHECK(cudaFree(gpuDistArray));
+    CHECK(cudaFree(finishedGpu));
+
+    CHECK(cudaDeviceReset());
+
+
+    return time;
 }
 
 int main() {
@@ -114,8 +130,13 @@ int main() {
     int dev = 0;
     unsigned int n = 10000;
     unsigned int blockSize, threadsPerBlock;
+    GpuGraph graph = createGpuGraph(n);
+    fillGraphRandom(&graph);
 
-    // GPU Setup
     CHECK(cudaSetDevice(dev));
+    blockSize = 512;
+    threadsPerBlock = 512;
+    double time = bellmanFordGpu(&graph, 0, blockSize, threadsPerBlock);
+
 
 }
