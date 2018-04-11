@@ -76,7 +76,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     initArrays(graph->dist, graph->size);
     graph->dist[startVertex] = 0;
     double starttime, endtime;
-    int *finished;
+    int *finished = malloc(sizeof(int));
     int *finishedGpu;
     unsigned int n, y, x, i;
     float *gpuadjMatrix1D;
