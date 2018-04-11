@@ -1,6 +1,7 @@
 #ifndef INF236_CA2_BELLMANFORDGpuGraphGPU_H
 #define INF236_CA2_BELLMANFORDGpuGraphGPU_H
 
+#define _XOPEN_SOURCE
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>

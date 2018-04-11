@@ -1,9 +1,10 @@
 #ifndef INF236_CA2_REPORTTOOL_H
 #define INF236_CA2_REPORTTOOL_H
 
+#define _XOPEN_SOURCE
+#include <stdlib.h>
 #include <omp.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include "completeGraph.h"
