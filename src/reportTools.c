@@ -1,14 +1,29 @@
 #include "reportTools.h"
+#define setRandomSeed() (srand((unsigned)time(NULL)))
+#define randomFloat() ((float)rand()/RAND_MAX)
 
-#define DEBUG_MODE false
-
-static bool cmpGraphDistMatrix(CompleteGraph *graph, float *otherDistMatrix) {
-    if (!graph || !otherDistMatrix) {
+static bool cmpGraphDistMatrix(CompleteGraph *graph1, CompleteGraph *graph2) {
+    if (!graph1 || !graph2) {
         return false;
     }
-    unsigned int y;
-    for (y = 0; y < graph->size; y++) {
-        if (graph->dist[y] != otherDistMatrix[y]) {
+
+    if(graph1->size != graph2->size){
+        //printf("Compare error 1...\n");
+        return false;
+    }
+    unsigned int y,x;
+
+    for(y = 0; y < graph1->size; y++){
+        for(x = 0; x < graph1->size;x++){
+            if(graph1->adjMatrix[y][x] != graph2->adjMatrix[y][x]){
+                //printf("Compare error 2...\n");
+                return false;
+            }
+        }
+    }
+
+    for (y = 0; y < graph1->size; y++) {
+        if (graph1->dist[y] != graph2->dist[y]) {
             return false;
         }
     }
@@ -24,9 +39,13 @@ static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
     }
 
     unsigned int y, x;
+
+    srand48(10);
     for (y = 0; y < size; y++) {
         for (x = 0; x < size; x++) {
             graph.adjMatrix[y][x] = (float) drand48();
+            if(y == 0 && x == 0){
+            }
         }
     }
 
@@ -58,10 +77,10 @@ void createReport(Report *report) {
                     printf("FATAL ERROR occurred...\n");
                     return;
                 }
-                bellmanFordParallelCpu(&graphParallel, 0, currentThreadNumber);
-                bool check = cmpGraphDistMatrix(&graphParallel, graphSequ.dist);
-                printf("parallelCpu;case=%d;n=%d;time=%lf;threads=%d;check=%d\n", currentRunNumber, currentVertNumber, time,
-                       currentThreadNumber, check);
+                time = bellmanFordParallelCpu(&graphParallel, 0, currentThreadNumber);
+                bool check = cmpGraphDistMatrix(&graphParallel, &graphSequ);
+                printf("parallelCpu;case=%d;n=%d;time=%lf;threads=%d;check=%d\n", currentRunNumber, currentVertNumber,
+                       time, currentThreadNumber, check);
                 destroyCompleteGraph(&graphParallel);
             }
 
@@ -70,48 +89,4 @@ void createReport(Report *report) {
 
     }
 
-}
-
-
-// TODO: Validate result with sequential result.
-void createReportParallelCpu(Report *report) {
-    if (!report) {
-        return;
-    }
-    unsigned int threadPtr, verticesPtr;
-    for (threadPtr = 0; threadPtr < report->threadCasesSize; threadPtr++) {
-        for (verticesPtr = 0; verticesPtr < report->verticesCasesSize; verticesPtr++) {
-            unsigned int numberOfVertices = report->verticesCases[verticesPtr];
-            CompleteGraph graph = buildRandomCompleteGraph(numberOfVertices);
-            if (graph.error) {
-                printf("ERROR: graph could not be build with vertex number %d\n", numberOfVertices);
-                return;
-            }
-            double bellmanFordTime = bellmanFordParallelCpu(&graph, 0, report->threadCases[threadPtr]);
-            printf("parallelCpu;numberOfVertices=%d;numberOfEdges=%d;threads=%d;duration=%lf\n", numberOfVertices,
-                   numberOfVertices * numberOfVertices, report->threadCases[threadPtr], bellmanFordTime);
-            destroyCompleteGraph(&graph);
-        }
-    }
-}
-
-void printReportBellmanFordCompleteGraphSequential(unsigned int *graphSizeArray, unsigned int arrSize) {
-    if (!graphSizeArray) {
-        return;
-    }
-    unsigned int i;
-    for (i = 0; i < arrSize; i++) {
-        if (DEBUG_MODE)
-            printf("Creating random graph with number of edges = %d\n", graphSizeArray[i] * graphSizeArray[i]);
-        CompleteGraph graph = buildRandomCompleteGraph(graphSizeArray[i]);
-        if (graph.error) {
-            printf("ERROR: graph could not be build with vertex number %d\n", graphSizeArray[i]);
-            return;
-        }
-        if (DEBUG_MODE) printf("Calculating...\n");
-        double bellmanFordTime = bellmanFord(&graph, 0);
-        printf("sequential;numberOfVertices=%d;numberOfEdges=%d;duration=%lf\n", graphSizeArray[i],
-               graphSizeArray[i] * graphSizeArray[i], bellmanFordTime);
-        destroyCompleteGraph(&graph);
-    }
 }
