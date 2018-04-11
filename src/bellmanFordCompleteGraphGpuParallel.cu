@@ -1,17 +1,18 @@
 #include "bellmanFordCompleteGraphGpuParallel.h"
+#include "bellmanFordCompleteGraphSequential.h"
 
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
 #define DEBUG 1
 
-inline void initArrays(float *distanceArray, long size) {
+static inline void initArrays(float *distanceArray, long size) {
     for (unsigned long i = 0; i < size; i++) {
         distanceArray[i] = INFINIT_DISTANCE;
     }
 }
 
-void fillGraphRandom(GpuGraph *graph) {
+static void fillGpuGraphRandom(GpuGraph *graph) {
     if (!graph) {
         return;
     }
@@ -19,6 +20,40 @@ void fillGraphRandom(GpuGraph *graph) {
     for (unsigned long i = 0; i < graph->size * graph->size; i++) {
         graph->adjMatrix1D[i] = drand48();
     }
+}
+
+static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
+    CompleteGraph graph = createCompleteGraph(size);
+    if (graph.error) {
+        return graph;
+    }
+
+    unsigned int y, x;
+
+    srand48(10);
+    for (y = 0; y < size; y++) {
+        for (x = 0; x < size; x++) {
+            graph.adjMatrix[y][x] = (float) drand48();
+            if(y == 0 && x == 0){
+            }
+        }
+    }
+
+    return graph;
+}
+
+static bool cmpDistArr(float* dist1, float* dist2, unsigned int size){
+    if(!dist1 || !dist2){
+        return false;
+    }
+
+    for(int i = 0; i < size; i++){
+        if(dist1[i] != dist2[i]){
+            return false;
+        }
+    }
+
+    return true;
 }
 
 GpuGraph createGpuGraph(unsigned int size) {
@@ -138,7 +173,7 @@ int main() {
     GpuGraph graph = createGpuGraph(n);
 
     if(DEBUG) printf("Fill graph...\n");
-    fillGraphRandom(&graph);
+    fillGpuGraphRandom(&graph);
     if(DEBUG) printf("Fill done...\n");
     CHECK(cudaSetDevice(dev));
     blockSize = 512;
@@ -146,5 +181,11 @@ int main() {
     if(DEBUG) printf("Run gpu bellman ford...\n");
     double time = bellmanFordGpu(&graph, 0, blockSize, threadsPerBlock);
     printf("result=%lf\n",time);
+
+    CompleteGraph cpuGraph = buildRandomCompleteGraph(n);
+    bellmanFord(cpuGraph,0);
+    bool check = cmpDistArr(cpuGraph.dist,graph.dist);
+    printf("check=%d\n",check);
+    
 
 }
