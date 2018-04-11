@@ -1,31 +1,14 @@
 #include "reportTools.h"
 
 #define DEBUG_MODE false
-#define setRandomSeed() (srand((unsigned)time(NULL)))
-#define randomFloat() ((float)rand()/RAND_MAX)
 
-
-static void cpyAdjMatrix(CompleteGraph *graph, float **newAdjMatrix) {
-    if (!newAdjMatrix) {
-        newAdjMatrix = (float **) malloc(sizeof(float *) * graph->size);
-    }
-    unsigned int i, y;
-    for (i = 0; i < graph->size; i++) {
-        newAdjMatrix[i] = (float *) malloc(sizeof(float) * graph->size);
-    }
-
-    for (y = 0; y < graph->size; y++) {
-        memcpy(newAdjMatrix[y], graph->adjMatrix[y], graph->size);
-    }
-}
-
-static bool cmpGraphMatrix(CompleteGraph *graph, float **adjMatrix) {
-    if (!graph || !adjMatrix) {
+static bool cmpGraphDistMatrix(CompleteGraph *graph, float *otherDistMatrix) {
+    if (!graph || !otherDistMatrix) {
         return false;
     }
-    unsigned int i;
-    for (i = 0; i < graph->size; i++) {
-        if (memcmp(graph->adjMatrix[i], adjMatrix[i], graph->size) != 0) {
+    unsigned int y;
+    for (y = 0; y < graph->size; y++) {
+        if (graph->dist[y] != otherDistMatrix[y]) {
             return false;
         }
     }
@@ -41,10 +24,9 @@ static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
     }
 
     unsigned int y, x;
-    setRandomSeed();
     for (y = 0; y < size; y++) {
         for (x = 0; x < size; x++) {
-            graph.adjMatrix[y][x] = randomFloat();
+            graph.adjMatrix[y][x] = (float) drand48();
         }
     }
 
@@ -55,29 +37,35 @@ void createReport(Report *report) {
     if (!report) {
         return;
     }
-    unsigned int runPtr, verticesPtr, threadPtr, i;
-    for (runPtr = 1; runPtr <= report->numberOfRuns; runPtr++) {
+    unsigned int currentRunNumber, verticesPtr, threadPtr, currentThreadNumber, currentVertNumber;
+    double time;
+    for (currentRunNumber = 1; currentRunNumber <= report->numberOfRuns; currentRunNumber++) {
         for (verticesPtr = 0; verticesPtr < report->verticesCasesSize; verticesPtr++) {
-            unsigned int numberOfVertices = report->verticesCases[verticesPtr];
-            unsigned int numberOfEdges = numberOfVertices * numberOfVertices;
-            CompleteGraph graph = buildRandomCompleteGraph(numberOfVertices);
-            float **cmpMatrix = (float **) malloc(sizeof(float *) * numberOfVertices);
-            double resultTime = bellmanFord(&graph, 0);
-            cpyAdjMatrix(&graph, cmpMatrix);
-            printf("seq;run=%d;time=%lf;vertices=%d;edges=%d\n", runPtr, resultTime, numberOfVertices, numberOfEdges);
-            for (threadPtr = 0; threadPtr < report->threadCasesSize; threadPtr++) {
-                unsigned int numberOfThreads = report->threadCases[threadPtr];
-                resultTime = bellmanFordParallelCpu(&graph, numberOfVertices, numberOfThreads);
-                bool checkEqual = cmpGraphMatrix(&graph, cmpMatrix);
-                printf("parallelCpu;run=%d;time=%lf;vertices=%d;edges=%d;threads=%d;checkEqual=%d\n", runPtr,
-                       resultTime, numberOfVertices, numberOfEdges, numberOfThreads, checkEqual);
+            currentVertNumber = report->verticesCases[verticesPtr];
 
+            CompleteGraph graphSequ = buildRandomCompleteGraph(currentVertNumber);
+            if (graphSequ.error) {
+                printf("FATAL ERROR occurred...\n");
+                return;
             }
-            destroyCompleteGraph(&graph);
-            for (i = 0; i < numberOfVertices; i++) {
-                free(cmpMatrix[i]);
+            time = bellmanFord(&graphSequ, 0);
+            printf("sequ;case=%d;n=%d;time=%lf;\n", currentRunNumber, currentVertNumber, time);
+
+            for (threadPtr = 0; threadPtr < report->threadCasesSize; threadPtr++) {
+                currentThreadNumber = report->threadCases[threadPtr];
+                CompleteGraph graphParallel = buildRandomCompleteGraph(currentVertNumber);
+                if (graphParallel.error) {
+                    printf("FATAL ERROR occurred...\n");
+                    return;
+                }
+                bellmanFordParallelCpu(&graphParallel, 0, currentThreadNumber);
+                bool check = cmpGraphDistMatrix(&graphParallel, graphSequ.dist);
+                printf("parallelCpu;case=%d;n=%d;time=%lf;threads=%d;check=%d\n", currentRunNumber, currentVertNumber, time,
+                       currentThreadNumber, check);
+                destroyCompleteGraph(&graphParallel);
             }
-            free(cmpMatrix);
+
+            destroyCompleteGraph(&graphSequ);
         }
 
     }

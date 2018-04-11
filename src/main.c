@@ -35,7 +35,7 @@ int main() {
 
     if(REPORT_MODE){
         Report report = createReportStruct();
-        //createReport(&report);
-        createReportParallelCpu(&report);
+        createReport(&report);
+        //createReportParallelCpu(&report);
     }
 }

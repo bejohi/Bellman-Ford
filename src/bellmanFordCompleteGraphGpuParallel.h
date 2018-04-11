@@ -1,5 +1,5 @@
-#ifndef INF236_CA2_BELLMANFORDCOMPLETEGRAPHGPU_H
-#define INF236_CA2_BELLMANFORDCOMPLETEGRAPHGPU_H
+#ifndef INF236_CA2_BELLMANFORDGpuGraphGPU_H
+#define INF236_CA2_BELLMANFORDGpuGraphGPU_H
 
 #include <stdlib.h>
 #include <stdbool.h>
@@ -10,13 +10,13 @@
 
 #define MAX_GRAPH_SIZE 10000
 
-typedef struct CompleteGraph {
+typedef struct GpuGraph {
     unsigned int size; //< the number of vertices.
     bool isDirected; //< indicates if the graph is directed.
     bool error; //< a flag which will be true if any function call on the graph struct causes an error.
     float *adjMatrix1D; //< a 1D "matrix" with the dimensions of size * size, where every colume indicates the distance between 2 vertices.
     float *dist; //< Stores the distance to a start vertex. Can be filled with shortest path algorithm.
-} CompleteGraph;
+} GpuGraph;
 
 // From Professional CUDA C Programming 2015
 
@@ -40,4 +40,4 @@ inline double seconds()
     return ((double)tp.tv_sec + (double)tp.tv_usec * 1.e-6);
 }
 
-#endif //INF236_CA2_BELLMANFORDCOMPLETEGRAPHGPU_H
+#endif //INF236_CA2_BELLMANFORDGpuGraphGPU_H

@@ -1,4 +1,4 @@
-#include "bellmanFordCompleteGraphGpuParallel.h"
+#include "bellmanFordGpuGraphGpuParallel.h"
 
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
@@ -10,31 +10,31 @@ inline void initArrays(float *distanceArray,long size) {
     }
 }
 
-CompleteGraph createCompleteGraph(unsigned int size) {
+GpuGraph createGpuGraph(unsigned int size) {
     if (size > MAX_GRAPH_SIZE) {
         size = MAX_GRAPH_SIZE;
     }
-    CompleteGraph completeGraph = {.size = size, .isDirected = false, .error = false};
+    GpuGraph GpuGraph = {.size = size, .isDirected = false, .error = false};
 
-    completeGraph.dist = (float *) malloc(sizeof(float) * size);
-    completeGraph.adjMatrix1D = (float *) malloc(sizeof(float) * size * size);
+    GpuGraph.dist = (float *) malloc(sizeof(float) * size);
+    GpuGraph.adjMatrix1D = (float *) malloc(sizeof(float) * size * size);
 
-    if (!completeGraph.dist || !completeGraph.adjMatrix1D) {
+    if (!GpuGraph.dist || !GpuGraph.adjMatrix1D) {
         exit(-101);
     }
 
     unsigned int i, x;
 
     for (i = 0; i < size * size; i++) {
-        completeGraph.adjMatrix1D[i] = 0;
+        GpuGraph.adjMatrix1D[i] = 0;
     }
-    return completeGraph;
+    return GpuGraph;
 }
 
 
-void destroyCompleteGraph(CompleteGraph *completeGraph) {
-    free(completeGraph->dist);
-    free(completeGraph->adjMatrix1D);
+void destroyGpuGraph(GpuGraph *GpuGraph) {
+    free(GpuGraph->dist);
+    free(GpuGraph->adjMatrix1D);
 }
 
 
@@ -55,7 +55,7 @@ __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int s
 
 }
 
-double bellmanFordGpu(CompleteGraph *graph, unsigned int startVertex) {
+double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex) {
 
     // CPU Setup
     if (!graph || !graph->adjMatrix1D|| !graph->dist) {
