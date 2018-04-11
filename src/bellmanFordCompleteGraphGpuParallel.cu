@@ -1,4 +1,4 @@
-#include "bellmanFordGpuGraphGpuParallel.h"
+#include "bellmanFordCompleteGraphGpuParallel.h"
 
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
