@@ -23,7 +23,7 @@ GpuGraph createGpuGraph(unsigned int size) {
         exit(-101);
     }
 
-    unsigned int i, x;
+    unsigned int i;
 
     for (i = 0; i < size * size; i++) {
         GpuGraph.adjMatrix1D[i] = 0;
@@ -68,7 +68,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     int *finished;
     int *finishedGpu;
     unsigned int n, y, x, i;
-    float **gpuadjMatrix1D;
+    float *gpuadjMatrix1D;
     float *gpuDistArray;
 
     // GPU Setup
@@ -89,7 +89,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
         CHECK(cudaMemcpy(gpuDistArray, graph->dist, sizeof(int), cudaMemcpyHostToDevice));
         CHECK(cudaMemcpy(finishedGpu, finished, sizeof(int), cudaMemcpyHostToDevice));
 
-        innerBellmanFord <<<grid, block>>> (gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
+        innerBellmanFord <<<grid, block>>>(gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
         CHECK(cudaDeviceSynchronize());
 
         CHECK(cudaMemcpy(graph->adjMatrix1D, gpuadjMatrix1D, sizeof(float) * graph->size * graph->size,
