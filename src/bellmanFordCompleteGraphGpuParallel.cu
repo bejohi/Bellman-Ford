@@ -31,7 +31,7 @@ CompleteGraph createCompleteGraph(unsigned int size) {
     completeGraph.dist = (float *) malloc(sizeof(float) * size);
     completeGraph.adjMatrix = (float **) malloc(sizeof(float *) * size);
 
-    if (!completeGraph.dist || !completeGraph.predecessor || !completeGraph.adjMatrix) {
+    if (!completeGraph.dist || !completeGraph.adjMatrix) {
         destroyCompleteGraph(&completeGraph);
         return (CompleteGraph) {.error = true};
     }
@@ -57,7 +57,6 @@ CompleteGraph createCompleteGraph(unsigned int size) {
 }
 
 void destroyCompleteGraph(CompleteGraph *completeGraph) {
-    free(completeGraph->predecessor);
     free(completeGraph->dist);
     unsigned int i;
     for (i = 0; i < completeGraph->size; i++) {
@@ -69,10 +68,10 @@ void destroyCompleteGraph(CompleteGraph *completeGraph) {
 }
 
 double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
-    if (!graph || !graph->adjMatrix || !graph->predecessor || !graph->dist) {
+    if (!graph || !graph->adjMatrix || !graph->dist) {
         return -1;
     }
-    initArraysSequ(graph->dist, graph->predecessor, graph->size);
+    initArraysSequ(graph->dist, graph->size);
     graph->dist[startVertex] = 0;
     double startTime, endTime;
     bool finished;
@@ -85,7 +84,6 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
                 float weight = graph->adjMatrix[y][x];
                 if (graph->dist[y] + weight < graph->dist[x]) {
                     graph->dist[x] = graph->dist[y] + weight;
-                    graph->predecessor[x] = y;
                     finished = false;
                 }
             }
