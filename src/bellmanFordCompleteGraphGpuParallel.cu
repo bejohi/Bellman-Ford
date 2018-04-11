@@ -183,8 +183,8 @@ int main() {
     printf("result=%lf\n",time);
 
     CompleteGraph cpuGraph = buildRandomCompleteGraph(n);
-    bellmanFord(cpuGraph,0);
-    bool check = cmpDistArr(cpuGraph.dist,graph.dist);
+    bellmanFord(&cpuGraph,0);
+    bool check = cmpDistArr(cpuGraph.dist,graph.dist,graph.size);
     printf("check=%d\n",check);
     
 
