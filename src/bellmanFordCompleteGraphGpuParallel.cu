@@ -134,11 +134,13 @@ static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
 
 static bool cmpDistArr(float* dist1, float* dist2, unsigned int size){
     if(!dist1 || !dist2){
+        if(DEBUG) printf("Diff error 1\n");
         return false;
     }
-
-    for(int i = 0; i < size; i++){
+    int i;
+    for(i = 0; i < size; i++){
         if(dist1[i] != dist2[i]){
+            if(DEBUG) printf("Diff error 1 for i=&d\n",i);
             return false;
         }
     }
@@ -198,10 +200,9 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     if(DEBUG) printf("Init arrays...\n");
     initArrays(graph->dist, graph->size);
     graph->dist[startVertex] = 0;
-    double starttime, endtime;
     int *finished = (int*) malloc(sizeof(int));
     int *finishedGpu;
-    unsigned int n, y, x, i;
+    unsigned int n;
     float *gpuadjMatrix1D;
     float *gpuDistArray;
 
@@ -235,6 +236,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
         CHECK(cudaGetLastError());
 
         if (*finished) {
+            printf("True Finished with n=%d...\n",n);
             break;
         }
     }
@@ -269,9 +271,11 @@ int main() {
     if(DEBUG) printf("Run gpu bellman ford...\n");
     double time = bellmanFordGpu(&graph, 0, blockSize, threadsPerBlock);
     printf("result=%lf\n",time);
-
+    if(DEBUG) printf("Build cpu graph...\n");
     CompleteGraph cpuGraph = buildRandomCompleteGraph(n);
+    if(DEBUG) printf("Run gpu bellman-ford...\n");
     bellmanFord(&cpuGraph,0);
+    if(DEBUG) printf("Run check...\n");
     bool check = cmpDistArr(cpuGraph.dist,graph.dist,graph.size);
     printf("check=%d\n",check);
     
