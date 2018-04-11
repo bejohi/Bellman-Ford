@@ -8,6 +8,7 @@
 #include <float.h>
 #include <string.h>
 #include <sys/time.h>
+#include <string.h>
 
 #define MAX_GRAPH_SIZE 10000
 

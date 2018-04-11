@@ -1,10 +1,102 @@
 #include "bellmanFordCompleteGraphGpuParallel.h"
-#include "bellmanFordCompleteGraphSequential.h"
 
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
 #define DEBUG 1
+
+
+// REGION: SEQU Graph
+typedef struct CompleteGraph {
+    unsigned int size; //< the number of vertices.
+    bool isDirected; //< indicates if the graph is directed.
+    bool error; //< a flag which will be true if any function call on the graph struct causes an error.
+    float **adjMatrix; //< a 2D matrix with the dimensions of size * size, where every colume indicates the distance between 2 vertices.
+    float *dist; //< Stores the distance to a start vertex. Can be filled with shortest path algorithm.
+} CompleteGraph;
+
+inline void initArraysSequ(float *distanceArray,long size) {
+    unsigned long i;
+    for (i = 0; i < size; i++) {
+        distanceArray[i] = INFINIT_DISTANCE;
+    }
+}
+
+CompleteGraph createCompleteGraph(unsigned int size) {
+    if (size > MAX_GRAPH_SIZE) {
+        size = MAX_GRAPH_SIZE;
+    }
+    CompleteGraph completeGraph = {.size = size, .isDirected = false, .error = false};
+
+    completeGraph.dist = (float *) malloc(sizeof(float) * size);
+    completeGraph.adjMatrix = (float **) malloc(sizeof(float *) * size);
+
+    if (!completeGraph.dist || !completeGraph.predecessor || !completeGraph.adjMatrix) {
+        destroyCompleteGraph(&completeGraph);
+        return (CompleteGraph) {.error = true};
+    }
+
+    unsigned int i, x;
+
+    for (i = 0; i < size; i++) {
+        completeGraph.adjMatrix[i] = (float *) malloc(sizeof(float) * size);
+        if (!completeGraph.adjMatrix[i]) {
+            destroyCompleteGraph(&completeGraph);
+            return (CompleteGraph) {.error = true};
+        }
+        if (i == 0) {
+            for (x = 0; x < size; x++) {
+                completeGraph.adjMatrix[i][x] = 0;
+            }
+        } else {
+            memcpy(completeGraph.adjMatrix[i], completeGraph.adjMatrix[0], sizeof(float) * size);
+        }
+
+    }
+    return completeGraph;
+}
+
+void destroyCompleteGraph(CompleteGraph *completeGraph) {
+    free(completeGraph->predecessor);
+    free(completeGraph->dist);
+    unsigned int i;
+    for (i = 0; i < completeGraph->size; i++) {
+        if (completeGraph->adjMatrix[i]) {
+            free(completeGraph->adjMatrix[i]);
+        }
+    }
+    free(completeGraph->adjMatrix);
+}
+
+double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
+    if (!graph || !graph->adjMatrix || !graph->predecessor || !graph->dist) {
+        return -1;
+    }
+    initArraysSequ(graph->dist, graph->predecessor, graph->size);
+    graph->dist[startVertex] = 0;
+    double startTime, endTime;
+    bool finished;
+    unsigned int n, y, x;
+    startTime = seconds();
+    for (n = 0; n < graph->size; n++) {
+        finished = true;
+        for (y = 0; y < graph->size; y++) {
+            for (x = 0; x < graph->size; x++) {
+                float weight = graph->adjMatrix[y][x];
+                if (graph->dist[y] + weight < graph->dist[x]) {
+                    graph->dist[x] = graph->dist[y] + weight;
+                    graph->predecessor[x] = y;
+                    finished = false;
+                }
+            }
+        }
+        if (finished) {
+            break;
+        }
+    }
+    endTime = seconds();
+    return endTime - startTime;
+}
 
 static inline void initArrays(float *distanceArray, long size) {
     for (unsigned long i = 0; i < size; i++) {
@@ -77,12 +169,10 @@ GpuGraph createGpuGraph(unsigned int size) {
     return GpuGraph;
 }
 
-
 void destroyGpuGraph(GpuGraph *GpuGraph) {
     free(GpuGraph->dist);
     free(GpuGraph->adjMatrix1D);
 }
-
 
 __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int *finished) {
     unsigned int x, y, currentMatrixPosition;
