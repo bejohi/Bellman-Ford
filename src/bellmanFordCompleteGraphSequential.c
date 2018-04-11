@@ -1,15 +1,20 @@
 #include "bellmanFordCompleteGraphSequential.h"
 
+double currentTime(){
+    // TODO: Repair vor OMP as well as for nvcc.
+    return 0;
+}
+
 double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
     if (!graph || !graph->adjMatrix || !graph->predecessor || !graph->dist) {
         return -1;
     }
     initArrays(graph->dist, graph->predecessor, graph->size);
     graph->dist[startVertex] = 0;
-    time_t startTime, endTime;
+    double startTime, endTime;
     bool finished;
     unsigned int n, y, x;
-    time(&startTime);
+    startTime = currentTime();
     for (n = 0; n < graph->size; n++) {
         finished = true;
         for (y = 0; y < graph->size; y++) {
@@ -26,6 +31,6 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
             break;
         }
     }
-    time(&endTime);
-    return difftime(endTime,startTime);
+    endTime = currentTime();
+    return endTime - startTime;
 }
