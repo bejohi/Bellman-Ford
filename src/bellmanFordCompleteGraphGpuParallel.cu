@@ -3,6 +3,7 @@
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
+#define DEBUG 1
 
 inline void initArrays(float *distanceArray, long size) {
     for (unsigned long i = 0; i < size; i++) {
@@ -71,7 +72,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     if (!graph || !graph->adjMatrix1D || !graph->dist) {
         return -1;
     }
-
+    if(DEBUG) printf("Init arrays...\n");
     initArrays(graph->dist, graph->size);
     graph->dist[startVertex] = 0;
     double starttime, endtime;
@@ -82,6 +83,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     float *gpuDistArray;
 
     // GPU Setup
+    if(DEBUG) printf("CUDA malloc...\n");
     CHECK(cudaMalloc((float **) gpuadjMatrix1D, sizeof(float) * graph->size * graph->size));
     CHECK(cudaMalloc((float **) gpuDistArray, sizeof(float) * graph->size));
     CHECK(cudaMalloc((int **) finishedGpu, sizeof(bool)));
@@ -91,14 +93,17 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     double time = seconds();
     for (n = 0; n < graph->size; n++) {
         *finished = 1;
+        if(DEBUG) printf("CUDA memcpy for n=%d...\n",n);
         CHECK(cudaMemcpy(gpuadjMatrix1D, graph->adjMatrix1D, sizeof(float) * graph->size * graph->size,
                          cudaMemcpyHostToDevice));
         CHECK(cudaMemcpy(gpuDistArray, graph->dist, sizeof(int), cudaMemcpyHostToDevice));
         CHECK(cudaMemcpy(finishedGpu, finished, sizeof(int), cudaMemcpyHostToDevice));
 
-        innerBellmanFord << < grid, blockSize >> > (gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
+        if(DEBUG) printf("Inner Bellmanford...\n");
+        innerBellmanFord <<<grid, blockSize>>> (gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
         CHECK(cudaDeviceSynchronize());
 
+        if(DEBUG) printf("CUDA memcpy back...\n");
         CHECK(cudaMemcpy(graph->adjMatrix1D, gpuadjMatrix1D, sizeof(float) * graph->size * graph->size,
                          cudaMemcpyDeviceToHost));
         CHECK(cudaMemcpy(graph->dist, gpuDistArray, sizeof(int), cudaMemcpyDeviceToHost));
@@ -110,7 +115,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
             break;
         }
     }
-
+    if(DEBUG) printf("Done...\n");
     time = seconds() - time;
 
     CHECK(cudaFree(gpuadjMatrix1D));
@@ -119,24 +124,27 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
 
     CHECK(cudaDeviceReset());
 
-
     return time;
 }
 
 int main() {
-    printf("Starting GPU Test...\n");
+    if(DEBUG) printf("Starting GPU Test...\n");
 
     // init locals
     int dev = 0;
     unsigned int n = 10000;
     unsigned int blockSize, threadsPerBlock;
+    if(DEBUG) printf("Create graph...\n");
     GpuGraph graph = createGpuGraph(n);
+
+    if(DEBUG) printf("Fill graph...\n");
     fillGraphRandom(&graph);
 
     CHECK(cudaSetDevice(dev));
     blockSize = 512;
     threadsPerBlock = 512;
+    if(DEBUG) printf("Run gpu bellman ford...\n");
     double time = bellmanFordGpu(&graph, 0, blockSize, threadsPerBlock);
-
+    printf("result=%lf\n",time);
 
 }
