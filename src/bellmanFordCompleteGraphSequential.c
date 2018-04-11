@@ -27,5 +27,5 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
         }
     }
     time(&endTime);
-    return difftime(startTime,endTime);
+    return difftime(endTime,startTime);
 }
