@@ -139,7 +139,7 @@ int main() {
 
     if(DEBUG) printf("Fill graph...\n");
     fillGraphRandom(&graph);
-
+    if(DEBUG) printf("Fill done...\n");
     CHECK(cudaSetDevice(dev));
     blockSize = 512;
     threadsPerBlock = 512;
