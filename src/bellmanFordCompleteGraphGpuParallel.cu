@@ -141,7 +141,7 @@ static bool cmpDistArr(CompleteGraph* completeGraph, GpuGraph* gpuGraph, unsigne
     if(DEBUG){
         for(i = 0; i < size; i++){
             for(y = 0; y < size; y++){
-                if(completeGraph->adjMatrix[i][y] != gpuGraph[y+(i*size)]){
+                if(completeGraph->adjMatrix[i][y] != gpuGraph->adjMatrix1D[y+(i*size)]){
                     if(DEBUG) printf("Diff error 2 for i=%d & y=%d\n",i,y);
                     return false;
                 }
