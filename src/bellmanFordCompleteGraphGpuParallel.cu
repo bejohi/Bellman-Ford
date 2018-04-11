@@ -132,15 +132,25 @@ static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
     return graph;
 }
 
-static bool cmpDistArr(float* dist1, float* dist2, unsigned int size){
-    if(!dist1 || !dist2){
+static bool cmpDistArr(CompleteGraph* completeGraph, GpuGraph* gpuGraph, unsigned int size){
+    if(!gpuGraph->dist || !completeGraph->dist){
         if(DEBUG) printf("Diff error 1\n");
         return false;
     }
-    int i;
+    int i,y;
+    if(DEBUG){
+        for(i = 0; i < size; i++){
+            for(y = 0; y < size; y++){
+                if(completeGraph->adjMatrix[i][y] != gpuGraph[y+(i*size)]){
+                    if(DEBUG) printf("Diff error 2 for i=%d & y=%d\n",i,y);
+                    return false;
+                }
+            }
+        }
+    }
     for(i = 0; i < size; i++){
-        if(dist1[i] != dist2[i]){
-            if(DEBUG) printf("Diff error 1 for i=&d\n",i);
+        if(gpuGraph->dist[i] != completeGraph->dist[i]){
+            if(DEBUG) printf("Diff error 3 for i=%d\n",i);
             return false;
         }
     }
