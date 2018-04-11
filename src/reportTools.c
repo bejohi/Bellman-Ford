@@ -1,6 +1,4 @@
 #include "reportTools.h"
-#define setRandomSeed() (srand((unsigned)time(NULL)))
-#define randomFloat() ((float)rand()/RAND_MAX)
 
 static bool cmpGraphDistMatrix(CompleteGraph *graph1, CompleteGraph *graph2) {
     if (!graph1 || !graph2) {
@@ -8,19 +6,10 @@ static bool cmpGraphDistMatrix(CompleteGraph *graph1, CompleteGraph *graph2) {
     }
 
     if(graph1->size != graph2->size){
-        //printf("Compare error 1...\n");
+        printf("Compare error 1...\n");
         return false;
     }
-    unsigned int y,x;
-
-    for(y = 0; y < graph1->size; y++){
-        for(x = 0; x < graph1->size;x++){
-            if(graph1->adjMatrix[y][x] != graph2->adjMatrix[y][x]){
-                //printf("Compare error 2...\n");
-                return false;
-            }
-        }
-    }
+    unsigned int y;
 
     for (y = 0; y < graph1->size; y++) {
         if (graph1->dist[y] != graph2->dist[y]) {

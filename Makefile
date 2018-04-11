@@ -3,10 +3,10 @@
 all: build
 	./bin/bellmanFord
 
-gpu: gbu-build
+gpu: gpu-build
 	./bin/bellmanFordCuda
 
-gbu-build: prep
+gpu-build: prep
 	nvcc -o bin/bellmanFordCuda src/bellmanFordCompleteGraphGpuParallel.cu -std=c++11 -lm
 
 

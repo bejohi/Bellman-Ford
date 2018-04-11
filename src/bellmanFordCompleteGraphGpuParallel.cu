@@ -4,7 +4,7 @@
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
 
-inline void initArrays(float *distanceArray,long size) {
+inline void initArrays(float *distanceArray, long size) {
     for (unsigned long i = 0; i < size; i++) {
         distanceArray[i] = INFINIT_DISTANCE;
     }
@@ -38,8 +38,8 @@ void destroyGpuGraph(GpuGraph *GpuGraph) {
 }
 
 
-__global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int* finished) {
-    unsigned int x,y,currentMatrixPosition;
+__global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int *finished) {
+    unsigned int x, y, currentMatrixPosition;
     currentMatrixPosition = threadIdx.x + blockIdx.x * blockDim.x;
     do {
         y = currentMatrixPosition / size;
@@ -51,41 +51,59 @@ __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int s
 
         }
         currentMatrixPosition += gridDim.x * blockDim.x;
-    } while(currentMatrixPosition < size * size);
+    } while (currentMatrixPosition < size * size);
 
 }
 
-double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex) {
+double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int blockSize, unsigned int threadsPerBlock) {
 
     // CPU Setup
-    if (!graph || !graph->adjMatrix1D|| !graph->dist) {
+    if (!graph || !graph->adjMatrix1D || !graph->dist) {
         return -1;
     }
 
     initArrays(graph->dist, graph->size);
     graph->dist[startVertex] = 0;
     double starttime, endtime;
-    bool finished;
-    int* finishedGpu;
+    int *finished;
+    int *finishedGpu;
     unsigned int n, y, x, i;
-    float** gpuadjMatrix1D;
-    float* gpuDistArray;
+    float **gpuadjMatrix1D;
+    float *gpuDistArray;
 
     // GPU Setup
-    CHECK(cudaMalloc((float**) gpuadjMatrix1D, sizeof(float) * graph->size * graph->size));
-    CHECK(cudaMalloc((float**) gpuDistArray, sizeof(float) * graph->size));
-    CHECK(cudaMalloc((int**) finishedGpu, sizeof(bool)));
+    CHECK(cudaMalloc((float **) gpuadjMatrix1D, sizeof(float) * graph->size * graph->size));
+    CHECK(cudaMalloc((float **) gpuDistArray, sizeof(float) * graph->size));
+    CHECK(cudaMalloc((int **) finishedGpu, sizeof(bool)));
 
-    // TODO: Init Arrays for GPU
+    int dimx = 32;
+    dim3 block;
+    dim3 grid;
 
+
+    double time = seconds();
     for (n = 0; n < graph->size; n++) {
-        finished = 1;
+        *finished = 1;
+        CHECK(cudaMemcpy(gpuadjMatrix1D, graph->adjMatrix1D, sizeof(float) * graph->size * graph->size,
+                         cudaMemcpyHostToDevice));
+        CHECK(cudaMemcpy(gpuDistArray, graph->dist, sizeof(int), cudaMemcpyHostToDevice));
+        CHECK(cudaMemcpy(finishedGpu, finished, sizeof(int), cudaMemcpyHostToDevice));
 
-        //innerBellmanFord()
-        if (finished) {
+        innerBellmanFord <<<grid, block>>> (gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
+        CHECK(cudaDeviceSynchronize());
+
+        CHECK(cudaMemcpy(graph->adjMatrix1D, gpuadjMatrix1D, sizeof(float) * graph->size * graph->size,
+                         cudaMemcpyDeviceToHost));
+        CHECK(cudaMemcpy(graph->dist, gpuDistArray, sizeof(int), cudaMemcpyDeviceToHost));
+        CHECK(cudaMemcpy(finished, finishedGpu, sizeof(int), cudaMemcpyDeviceToHost));
+
+        CHECK(cudaGetLastError());
+
+        if (*finished) {
             break;
         }
     }
+    time = seconds() - time;
     return -1;
 }
 
