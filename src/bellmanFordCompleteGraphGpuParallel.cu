@@ -86,8 +86,8 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     if(DEBUG) printf("CUDA malloc...\n");
     CHECK(cudaMalloc((void **) &gpuadjMatrix1D, sizeof(float) * graph->size * graph->size));
     CHECK(cudaMalloc((void **) &gpuDistArray, sizeof(float) * graph->size));
-    CHECK(cudaMalloc((void **) &finishedGpu, sizeof(bool)));
-
+    CHECK(cudaMalloc((void **) &finishedGpu, sizeof(int)));
+    if(DEBUG) printf("CUDA malloc done...\n");
     int grid = (graph->size * graph->size) / threadNum;
 
     double time = seconds();
