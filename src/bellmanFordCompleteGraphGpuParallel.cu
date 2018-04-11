@@ -22,6 +22,17 @@ inline void initArraysSequ(float *distanceArray,long size) {
     }
 }
 
+void destroyCompleteGraph(CompleteGraph *completeGraph) {
+    free(completeGraph->dist);
+    unsigned int i;
+    for (i = 0; i < completeGraph->size; i++) {
+        if (completeGraph->adjMatrix[i]) {
+            free(completeGraph->adjMatrix[i]);
+        }
+    }
+    free(completeGraph->adjMatrix);
+}
+
 CompleteGraph createCompleteGraph(unsigned int size) {
     if (size > MAX_GRAPH_SIZE) {
         size = MAX_GRAPH_SIZE;
@@ -54,17 +65,6 @@ CompleteGraph createCompleteGraph(unsigned int size) {
 
     }
     return completeGraph;
-}
-
-void destroyCompleteGraph(CompleteGraph *completeGraph) {
-    free(completeGraph->dist);
-    unsigned int i;
-    for (i = 0; i < completeGraph->size; i++) {
-        if (completeGraph->adjMatrix[i]) {
-            free(completeGraph->adjMatrix[i]);
-        }
-    }
-    free(completeGraph->adjMatrix);
 }
 
 double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
