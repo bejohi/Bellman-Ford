@@ -286,7 +286,7 @@ int main() {
     if(DEBUG) printf("Run gpu bellman-ford...\n");
     bellmanFord(&cpuGraph,0);
     if(DEBUG) printf("Run check...\n");
-    bool check = cmpDistArr(cpuGraph,graph,graph.size);
+    bool check = cmpDistArr(&cpuGraph,&graph,graph.size);
     printf("check=%d\n",check);
     
 
