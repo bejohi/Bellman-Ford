@@ -37,14 +37,14 @@ CompleteGraph createCompleteGraph(unsigned int size) {
     if (size > MAX_GRAPH_SIZE) {
         size = MAX_GRAPH_SIZE;
     }
-    CompleteGraph completeGraph = {.size = size, .isDirected = false, .error = false};
+    CompleteGraph completeGraph = {.size = size, .isDirected = false};
 
     completeGraph.dist = (float *) malloc(sizeof(float) * size);
     completeGraph.adjMatrix = (float **) malloc(sizeof(float *) * size);
 
     if (!completeGraph.dist || !completeGraph.adjMatrix) {
         destroyCompleteGraph(&completeGraph);
-        return (CompleteGraph) {.error = true};
+        return {};
     }
 
     unsigned int i, x;
@@ -53,7 +53,7 @@ CompleteGraph createCompleteGraph(unsigned int size) {
         completeGraph.adjMatrix[i] = (float *) malloc(sizeof(float) * size);
         if (!completeGraph.adjMatrix[i]) {
             destroyCompleteGraph(&completeGraph);
-            return (CompleteGraph) {.error = true};
+            return {};
         }
         if (i == 0) {
             for (x = 0; x < size; x++) {
