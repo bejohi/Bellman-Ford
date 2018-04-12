@@ -3,7 +3,7 @@
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_DEEP 0
 
 
@@ -16,7 +16,7 @@ typedef struct CompleteGraph {
     float *dist; //< Stores the distance to a start vertex. Can be filled with shortest path algorithm.
 } CompleteGraph;
 
-inline void initArraysSequ(float *distanceArray,long size) {
+inline void initArraysSequ(float *distanceArray, long size) {
     unsigned long i;
     for (i = 0; i < size; i++) {
         distanceArray[i] = INFINIT_DISTANCE;
@@ -131,37 +131,36 @@ static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
     return graph;
 }
 
-static bool cmpDistArr(CompleteGraph* completeGraph, GpuGraph* gpuGraph, unsigned int size){
-    if(!gpuGraph->dist || !completeGraph->dist){
-        if(DEBUG) printf("Diff error 1\n");
+static bool cmpDistArr(CompleteGraph *completeGraph, GpuGraph *gpuGraph, unsigned int size) {
+    if (!gpuGraph->dist || !completeGraph->dist) {
+        if (DEBUG) printf("Diff error 1\n");
         return false;
     }
-    int i,y;
-    if(DEBUG){
-        for(i = 0; i < size; i++){
-            for(y = 0; y < size; y++){
-                if(completeGraph->adjMatrix[i][y] != gpuGraph->adjMatrix1D[y+(i*size)]){
-                    if(DEBUG) printf("Diff error 2 for i=%d & y=%d\n",i,y);
+    int i, y;
+    if (DEBUG) {
+        for (i = 0; i < size; i++) {
+            for (y = 0; y < size; y++) {
+                if (completeGraph->adjMatrix[i][y] != gpuGraph->adjMatrix1D[y + (i * size)]) {
+                    if (DEBUG) printf("Diff error 2 for i=%d & y=%d\n", i, y);
                     return false;
                 }
             }
         }
     }
 
-    if(DEBUG_DEEP){
-        for(i = 0; i < size; i++){
-            printf("i=%d;GPU:%lf;CPU:%lf\n",i,gpuGraph->dist[i],completeGraph->dist[i]);
+    if (DEBUG_DEEP) {
+        for (i = 0; i < size; i++) {
+            printf("i=%d;GPU:%lf;CPU:%lf\n", i, gpuGraph->dist[i], completeGraph->dist[i]);
         }
     }
 
-    for(i = 0; i < size; i++){
-        if(gpuGraph->dist[i] != completeGraph->dist[i]){
-            if(DEBUG) printf("Diff error 3 for i=%d\n",i);
-            if(DEBUG) printf("GPU: %lf vs CPU:%lf\n",gpuGraph->dist[i], completeGraph->dist[i]);
+    for (i = 0; i < size; i++) {
+        if (gpuGraph->dist[i] != completeGraph->dist[i]) {
+            if (DEBUG) printf("Diff error 3 for i=%d\n", i);
+            if (DEBUG) printf("GPU: %lf vs CPU:%lf\n", gpuGraph->dist[i], completeGraph->dist[i]);
             return false;
         }
     }
-
 
 
     return true;
@@ -202,7 +201,7 @@ __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int s
         float weight = adjMatrix1D[currentMatrixPosition];
         //if(DEBUG_DEEP) printf("weight:%lf\n",weight);
         if (dist[y] + weight < dist[x]) {
-            if(DEBUG_DEEP) printf("innerBellmanFord if called\n");
+            if (DEBUG_DEEP) printf("innerBellmanFord if called\n");
             dist[x] = dist[y] + weight;
             *finished = 0;
 
@@ -217,10 +216,10 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     if (!graph || !graph->adjMatrix1D || !graph->dist) {
         return -1;
     }
-    if(DEBUG) printf("Init arrays...\n");
+    if (DEBUG) printf("Init arrays...\n");
     initArrays(graph->dist, graph->size);
     graph->dist[startVertex] = 0;
-    int *finished = (int*) malloc(sizeof(int));
+    int *finished = (int *) malloc(sizeof(int));
     int *finishedGpu;
     unsigned int n;
     float *gpuadjMatrix1D;
@@ -228,20 +227,20 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     unsigned long size2D = sizeof(float) * graph->size * graph->size;
 
     // GPU Setup
-    if(DEBUG) printf("CUDA malloc...\n");
+    if (DEBUG) printf("CUDA malloc...\n");
     CHECK(cudaMalloc((void **) &gpuadjMatrix1D, size2D));
     CHECK(cudaMalloc((void **) &gpuDistArray, sizeof(float) * graph->size));
     CHECK(cudaMalloc((void **) &finishedGpu, sizeof(int)));
     CHECK(cudaMemcpy(gpuDistArray, graph->dist, sizeof(float) * graph->size, cudaMemcpyHostToDevice));
     CHECK(cudaMemcpy(gpuadjMatrix1D, graph->adjMatrix1D, size2D, cudaMemcpyHostToDevice));
-    if(DEBUG) printf("CUDA malloc done...\n");
+    if (DEBUG) printf("CUDA malloc done...\n");
     dim3 block(blockSize);
     dim3 grid(threadNum);
 
     double time = seconds();
     for (n = 0; n < graph->size; n++) {
         *finished = 1;
-        if(DEBUG) printf("CUDA memcpy for n=%d...\n",n);
+        if (DEBUG) printf("CUDA memcpy for n=%d...\n", n);
 
 
         CHECK(cudaMemcpy(finishedGpu, finished, sizeof(int), cudaMemcpyHostToDevice));
@@ -253,13 +252,13 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
         CHECK(cudaGetLastError());
 
         if (*finished) {
-            if(DEBUG) printf("True Finished with n=%d...\n",n);
+            if (DEBUG) printf("True Finished with n=%d...\n", n);
             break;
         }
     }
     time = seconds() - time;
     CHECK(cudaMemcpy(graph->dist, gpuDistArray, sizeof(float) * graph->size, cudaMemcpyDeviceToHost));
-    if(DEBUG) printf("Done...\n");
+    if (DEBUG) printf("Done...\n");
 
 
     CHECK(cudaFree(gpuadjMatrix1D));
@@ -273,32 +272,58 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     return time;
 }
 
-int main() {
-    if(DEBUG) printf("Starting GPU Test...\n");
+static void createReport() {
+    unsigned int n = 10000;
+    unsigned int threadArr[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
+    unsigned int blockArr[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
+
+    CompleteGraph cpuGrap = buildRandomCompleteGraph(n);
+    GpuGraph gpuGraph = createGpuGraph(n);
+    fillGpuGraphRandom(&gpuGraph);
+    bellmanFord(&cpuGrap, 0);
+
+    for (unsigned int tPtr = 0; tPtr < 11; tPtr++) {
+        for (unsigned int bPtr = 0; bPtr < 7; bPtr++) {
+            double time = bellmanFordGpu(&gpuGraph, 0, blockArr[bPtr], threadArr[tPtr]);
+            bool check = cmpDistArr(&cpuGrap, &gpuGraph);
+            printf("parallelGpu;n=%d;threads=%d;blockSize=%d;time=%lf;check=%d\n", n, threadArr[tPtr],
+                   blockArr[bPtr], time, check);
+        }
+    }
+
+    destroyCompleteGraph(&cpuGrap);
+    destroyGpuGraph(&gpuGraph);
+
+}
+
+static void preTest() {
+    if (DEBUG) printf("Starting GPU Test...\n");
 
     // init locals
     int dev = 0;
     unsigned int n = 10000;
     unsigned int blockSize, threadsPerBlock;
-    if(DEBUG) printf("Create graph...\n");
+    if (DEBUG) printf("Create graph...\n");
     GpuGraph graph = createGpuGraph(n);
 
-    if(DEBUG) printf("Fill graph...\n");
+    if (DEBUG) printf("Fill graph...\n");
     fillGpuGraphRandom(&graph);
-    if(DEBUG) printf("Fill done...\n");
+    if (DEBUG) printf("Fill done...\n");
     CHECK(cudaSetDevice(dev));
     blockSize = 512;
     threadsPerBlock = n;
-    if(DEBUG) printf("Run gpu bellman ford...\n");
+    if (DEBUG) printf("Run gpu bellman ford...\n");
     double time = bellmanFordGpu(&graph, 0, blockSize, threadsPerBlock);
-    printf("result=%lf\n",time);
-    if(DEBUG) printf("Build cpu graph...\n");
+    printf("result=%lf\n", time);
+    if (DEBUG) printf("Build cpu graph...\n");
     CompleteGraph cpuGraph = buildRandomCompleteGraph(n);
-    if(DEBUG) printf("Run cpu bellman-ford...\n");
-    bellmanFord(&cpuGraph,0);
-    if(DEBUG) printf("Run check...\n");
-    bool check = cmpDistArr(&cpuGraph,&graph,graph.size);
-    printf("check=%d\n",check);
-    
+    if (DEBUG) printf("Run cpu bellman-ford...\n");
+    bellmanFord(&cpuGraph, 0);
+    if (DEBUG) printf("Run check...\n");
+    bool check = cmpDistArr(&cpuGraph, &graph, graph.size);
+    printf("check=%d\n", check);
+}
 
+int main() {
+    createReport();
 }
