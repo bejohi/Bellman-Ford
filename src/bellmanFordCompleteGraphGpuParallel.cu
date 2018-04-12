@@ -285,7 +285,7 @@ static void createReport() {
     for (unsigned int tPtr = 0; tPtr < 11; tPtr++) {
         for (unsigned int bPtr = 0; bPtr < 7; bPtr++) {
             double time = bellmanFordGpu(&gpuGraph, 0, blockArr[bPtr], threadArr[tPtr]);
-            bool check = cmpDistArr(&cpuGrap, &gpuGraph);
+            bool check = cmpDistArr(&cpuGrap, &gpuGraph,gpuGraph.size);
             printf("parallelGpu;n=%d;threads=%d;blockSize=%d;time=%lf;check=%d\n", n, threadArr[tPtr],
                    blockArr[bPtr], time, check);
         }
