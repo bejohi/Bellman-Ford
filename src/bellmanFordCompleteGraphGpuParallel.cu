@@ -3,7 +3,7 @@
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
-#define DEBUG 0
+#define DEBUG 1
 #define DEBUG_DEEP 0
 
 
