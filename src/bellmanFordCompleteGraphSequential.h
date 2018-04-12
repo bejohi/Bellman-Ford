@@ -3,6 +3,7 @@
 
 #include "completeGraph.h"
 #include <time.h>
+#include <omp.h>
 
 /**
  * Runs the Bellman-Ford Algorithm on a given Complete Graph.

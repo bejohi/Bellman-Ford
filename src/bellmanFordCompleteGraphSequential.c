@@ -1,8 +1,7 @@
 #include "bellmanFordCompleteGraphSequential.h"
 
 double currentTime(){
-    // TODO: Repair vor OMP as well as for nvcc.
-    return 0;
+    return omp_get_wtime();
 }
 
 double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
@@ -31,6 +30,6 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
             break;
         }
     }
-    endTime = currentTime();
+    endTime = currentTime() - startTime;
     return endTime - startTime;
 }
