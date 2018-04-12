@@ -193,7 +193,7 @@ __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int s
         float weight = adjMatrix1D[currentMatrixPosition];
         if (dist[y] + weight < dist[x]) {
             dist[x] = dist[y] + weight;
-            finished = 0;
+            *finished = 0;
 
         }
         currentMatrixPosition += gridDim.x * blockDim.x;
