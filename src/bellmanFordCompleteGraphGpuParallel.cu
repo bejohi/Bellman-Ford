@@ -299,7 +299,7 @@ static void createReport() {
 }
 
 static void preTest() {
-    if (DEBUG) printf("Starting GPU Test...\n");
+    printf("Starting GPU Test...\n");
 
     // init locals
     int dev = 0;
@@ -324,8 +324,11 @@ static void preTest() {
     if (DEBUG) printf("Run check...\n");
     bool check = cmpDistArr(&cpuGraph, &graph, graph.size);
     printf("check=%d\n", check);
+    destroyGpuGraph(&graph);
+    destroyCompleteGraph(&cpuGraph);
 }
 
 int main() {
+    preTest();
     createReport();
 }
