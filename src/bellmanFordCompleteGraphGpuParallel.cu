@@ -235,7 +235,8 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     CHECK(cudaMalloc((void **) &gpuDistArray, sizeof(float) * graph->size));
     CHECK(cudaMalloc((void **) &finishedGpu, sizeof(int)));
     if(DEBUG) printf("CUDA malloc done...\n");
-    int grid = threadNum;
+    dim3 block(blockSize);
+    dim3 grid(threadNum);
 
     double time = seconds();
     for (n = 0; n < graph->size; n++) {
@@ -246,7 +247,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
         CHECK(cudaMemcpy(finishedGpu, finished, sizeof(int), cudaMemcpyHostToDevice));
 
         if(DEBUG) printf("Inner Bellmanford...\n");
-        innerBellmanFord <<<grid, blockSize>>> (gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
+        innerBellmanFord <<<grid, block>>> (gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
         CHECK(cudaDeviceSynchronize());
 
         if(DEBUG) printf("CUDA memcpy back...\n");
