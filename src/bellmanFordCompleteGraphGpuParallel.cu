@@ -151,6 +151,7 @@ static bool cmpDistArr(CompleteGraph* completeGraph, GpuGraph* gpuGraph, unsigne
     for(i = 0; i < size; i++){
         if(gpuGraph->dist[i] != completeGraph->dist[i]){
             if(DEBUG) printf("Diff error 3 for i=%d\n",i);
+            if(DEBUG) printf("GPU: %lf vs CPU:%lf\n",gpuGraph->dist[i], completeGraph->dist[i]);
             return false;
         }
     }
