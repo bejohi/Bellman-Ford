@@ -4,6 +4,7 @@
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
 #define DEBUG 1
+#define DEBUG_DEEP 1
 
 
 // REGION: SEQU Graph
@@ -156,6 +157,12 @@ static bool cmpDistArr(CompleteGraph* completeGraph, GpuGraph* gpuGraph, unsigne
         }
     }
 
+    if(DEBUG_DEEP){
+        for(i = 0; i < size; i++){
+            printf("i=%d;GPU:%lf;CPU:%lf\n",i,gpuGraph->dist[i],completeGraph->dist[i]);
+        }
+    }
+
     return true;
 }
 
@@ -188,9 +195,9 @@ void destroyGpuGraph(GpuGraph *GpuGraph) {
 __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int *finished) {
     unsigned int x, y, currentMatrixPosition;
     currentMatrixPosition = threadIdx.x + blockIdx.x * blockDim.x;
-    do {
-        x = currentMatrixPosition / size;
-        y = currentMatrixPosition & size;
+    while (currentMatrixPosition < size * size) {
+        y = currentMatrixPosition / size;
+        x = currentMatrixPosition & size;
         float weight = adjMatrix1D[currentMatrixPosition];
         if (dist[y] + weight < dist[x]) {
             dist[x] = dist[y] + weight;
@@ -198,7 +205,7 @@ __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int s
 
         }
         currentMatrixPosition += gridDim.x * blockDim.x;
-    } while (currentMatrixPosition < size * size);
+    }
 
 }
 
@@ -223,7 +230,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     CHECK(cudaMalloc((void **) &gpuDistArray, sizeof(float) * graph->size));
     CHECK(cudaMalloc((void **) &finishedGpu, sizeof(int)));
     if(DEBUG) printf("CUDA malloc done...\n");
-    int grid = (graph->size * graph->size) / threadNum;
+    int grid = threadNum;
 
     double time = seconds();
     for (n = 0; n < graph->size; n++) {
@@ -268,7 +275,7 @@ int main() {
 
     // init locals
     int dev = 0;
-    unsigned int n = 10000;
+    unsigned int n = 4;
     unsigned int blockSize, threadsPerBlock;
     if(DEBUG) printf("Create graph...\n");
     GpuGraph graph = createGpuGraph(n);
@@ -277,8 +284,8 @@ int main() {
     fillGpuGraphRandom(&graph);
     if(DEBUG) printf("Fill done...\n");
     CHECK(cudaSetDevice(dev));
-    blockSize = 512;
-    threadsPerBlock = 512;
+    blockSize = 1;
+    threadsPerBlock = 4;
     if(DEBUG) printf("Run gpu bellman ford...\n");
     double time = bellmanFordGpu(&graph, 0, blockSize, threadsPerBlock);
     printf("result=%lf\n",time);
