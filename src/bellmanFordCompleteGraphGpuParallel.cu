@@ -125,8 +125,6 @@ static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
     for (y = 0; y < size; y++) {
         for (x = 0; x < size; x++) {
             graph.adjMatrix[y][x] = (float) drand48();
-            if(y == 0 && x == 0){
-            }
         }
     }
 
@@ -234,6 +232,8 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     CHECK(cudaMalloc((void **) &gpuadjMatrix1D, size2D));
     CHECK(cudaMalloc((void **) &gpuDistArray, sizeof(float) * graph->size));
     CHECK(cudaMalloc((void **) &finishedGpu, sizeof(int)));
+    CHECK(cudaMemcpy(gpuDistArray, graph->dist, sizeof(float) * graph->size, cudaMemcpyHostToDevice));
+    CHECK(cudaMemcpy(gpuadjMatrix1D, graph->adjMatrix1D, size2D, cudaMemcpyHostToDevice));
     if(DEBUG) printf("CUDA malloc done...\n");
     dim3 block(blockSize);
     dim3 grid(threadNum);
@@ -242,28 +242,25 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     for (n = 0; n < graph->size; n++) {
         *finished = 1;
         if(DEBUG) printf("CUDA memcpy for n=%d...\n",n);
-        CHECK(cudaMemcpy(gpuadjMatrix1D, graph->adjMatrix1D, size2D, cudaMemcpyHostToDevice));
-        CHECK(cudaMemcpy(gpuDistArray, graph->dist, sizeof(float) * graph->size, cudaMemcpyHostToDevice));
+
+
         CHECK(cudaMemcpy(finishedGpu, finished, sizeof(int), cudaMemcpyHostToDevice));
 
-        if(DEBUG) printf("Inner Bellmanford...\n");
         innerBellmanFord <<<grid, block>>> (gpuadjMatrix1D, gpuDistArray, graph->size, finishedGpu);
         CHECK(cudaDeviceSynchronize());
-
-        if(DEBUG) printf("CUDA memcpy back...\n");
-        CHECK(cudaMemcpy(graph->adjMatrix1D, gpuadjMatrix1D, size2D, cudaMemcpyDeviceToHost));
-        CHECK(cudaMemcpy(graph->dist, gpuDistArray, sizeof(float) * graph->size, cudaMemcpyDeviceToHost));
         CHECK(cudaMemcpy(finished, finishedGpu, sizeof(int), cudaMemcpyDeviceToHost));
 
         CHECK(cudaGetLastError());
 
         if (*finished) {
-            printf("True Finished with n=%d...\n",n);
+            if(DEBUG) printf("True Finished with n=%d...\n",n);
             break;
         }
     }
-    if(DEBUG) printf("Done...\n");
     time = seconds() - time;
+    CHECK(cudaMemcpy(graph->dist, gpuDistArray, sizeof(float) * graph->size, cudaMemcpyDeviceToHost));
+    if(DEBUG) printf("Done...\n");
+
 
     CHECK(cudaFree(gpuadjMatrix1D));
     CHECK(cudaFree(gpuDistArray));
