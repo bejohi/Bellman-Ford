@@ -3,7 +3,7 @@
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
-#define DEBUG 1
+#define DEBUG 0
 #define DEBUG_DEEP 0
 
 
@@ -275,27 +275,26 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
 static void createReport() {
     printf("# Create report...\n");
     unsigned int n = 10000;
-    unsigned int threadArr[] = {512, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
-    unsigned int blockArr[] = {512, 10, 100, 1000, 10000, 100000, 1000000};
-
+    unsigned int threadArr[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
+    unsigned int blockArr[] = {100, 1000, 10000, 100000, 1000000};
     printf("# Pre Build...\n");
     CompleteGraph cpuGrap = buildRandomCompleteGraph(n);
-    GpuGraph gpuGraph = createGpuGraph(n);
-    fillGpuGraphRandom(&gpuGraph);
     bellmanFord(&cpuGrap, 0);
     printf("# ...done! Run test cases...\n");
     for (unsigned int tPtr = 0; tPtr < 11; tPtr++) {
-        for (unsigned int bPtr = 0; bPtr < 7; bPtr++) {
+        for (unsigned int bPtr = 0; bPtr < 5; bPtr++) {
+            gpuGraph = createGpuGraph(n);
+            fillGpuGraphRandom(&gpuGraph);
             printf("Run with thread=%d & block=%d\n",threadArr[tPtr],blockArr[bPtr]);
             double time = bellmanFordGpu(&gpuGraph, 0, blockArr[bPtr], threadArr[tPtr]);
             bool check = cmpDistArr(&cpuGrap, &gpuGraph,gpuGraph.size);
             printf("parallelGpu;n=%d;threads=%d;blockSize=%d;time=%lf;check=%d;\n", n, threadArr[tPtr],
                    blockArr[bPtr], time, check);
+            destroyGpuGraph(&gpuGraph);
         }
     }
-
     destroyCompleteGraph(&cpuGrap);
-    destroyGpuGraph(&gpuGraph);
+
 
 }
 
@@ -330,6 +329,6 @@ static void preTest() {
 }
 
 int main() {
-    preTest();
+    if(DEBUG) preTest();
     createReport();
 }
