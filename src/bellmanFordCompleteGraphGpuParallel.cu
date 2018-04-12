@@ -4,7 +4,7 @@
 #define INFINIT_DISTANCE 1000000
 #define NO_PREV 100000
 #define DEBUG 1
-#define DEBUG_DEEP 1
+#define DEBUG_DEEP 0
 
 
 // REGION: SEQU Graph
@@ -280,7 +280,7 @@ int main() {
 
     // init locals
     int dev = 0;
-    unsigned int n = 4;
+    unsigned int n = 10000;
     unsigned int blockSize, threadsPerBlock;
     if(DEBUG) printf("Create graph...\n");
     GpuGraph graph = createGpuGraph(n);
@@ -289,8 +289,8 @@ int main() {
     fillGpuGraphRandom(&graph);
     if(DEBUG) printf("Fill done...\n");
     CHECK(cudaSetDevice(dev));
-    blockSize = 1;
-    threadsPerBlock = 4;
+    blockSize = 512;
+    threadsPerBlock = n;
     if(DEBUG) printf("Run gpu bellman ford...\n");
     double time = bellmanFordGpu(&graph, 0, blockSize, threadsPerBlock);
     printf("result=%lf\n",time);
