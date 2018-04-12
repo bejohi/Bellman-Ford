@@ -149,6 +149,13 @@ static bool cmpDistArr(CompleteGraph* completeGraph, GpuGraph* gpuGraph, unsigne
             }
         }
     }
+
+    if(DEBUG_DEEP){
+        for(i = 0; i < size; i++){
+            printf("i=%d;GPU:%lf;CPU:%lf\n",i,gpuGraph->dist[i],completeGraph->dist[i]);
+        }
+    }
+
     for(i = 0; i < size; i++){
         if(gpuGraph->dist[i] != completeGraph->dist[i]){
             if(DEBUG) printf("Diff error 3 for i=%d\n",i);
@@ -157,11 +164,7 @@ static bool cmpDistArr(CompleteGraph* completeGraph, GpuGraph* gpuGraph, unsigne
         }
     }
 
-    if(DEBUG_DEEP){
-        for(i = 0; i < size; i++){
-            printf("i=%d;GPU:%lf;CPU:%lf\n",i,gpuGraph->dist[i],completeGraph->dist[i]);
-        }
-    }
+
 
     return true;
 }
