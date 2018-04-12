@@ -273,15 +273,17 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
 }
 
 static void createReport() {
+    printf("# Create report...\n");
     unsigned int n = 10000;
     unsigned int threadArr[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
     unsigned int blockArr[] = {1, 10, 100, 1000, 10000, 100000, 1000000};
 
+    printf("# Pre Build...\n");
     CompleteGraph cpuGrap = buildRandomCompleteGraph(n);
     GpuGraph gpuGraph = createGpuGraph(n);
     fillGpuGraphRandom(&gpuGraph);
     bellmanFord(&cpuGrap, 0);
-
+    printf("# ...done start outer loop.\n");
     for (unsigned int tPtr = 0; tPtr < 11; tPtr++) {
         for (unsigned int bPtr = 0; bPtr < 7; bPtr++) {
             double time = bellmanFordGpu(&gpuGraph, 0, blockArr[bPtr], threadArr[tPtr]);
