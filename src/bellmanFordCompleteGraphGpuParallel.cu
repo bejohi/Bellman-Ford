@@ -200,9 +200,11 @@ __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int s
     currentMatrixPosition = threadIdx.x + blockIdx.x * blockDim.x;
     while (currentMatrixPosition < size * size) {
         y = currentMatrixPosition / size;
-        x = currentMatrixPosition & size;
+        x = currentMatrixPosition % size;
         float weight = adjMatrix1D[currentMatrixPosition];
+        //if(DEBUG_DEEP) printf("weight:%lf\n",weight);
         if (dist[y] + weight < dist[x]) {
+            if(DEBUG_DEEP) printf("innerBellmanFord if called\n");
             dist[x] = dist[y] + weight;
             *finished = 0;
 
