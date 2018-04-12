@@ -277,13 +277,13 @@ static void createReport() {
     unsigned int n = 10000;
     GpuGraph gpuGraph;
     unsigned int threadArr[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
-    unsigned int blockArr[] = {100, 1000, 10000, 100000, 1000000};
+    unsigned int blockArr[] = {50,100,150,200,250,300,350,400,500,1000,1024};
     printf("# Pre Build...\n");
     CompleteGraph cpuGrap = buildRandomCompleteGraph(n);
     bellmanFord(&cpuGrap, 0);
     printf("# ...done! Run test cases...\n");
     for (unsigned int tPtr = 0; tPtr < 11; tPtr++) {
-        for (unsigned int bPtr = 0; bPtr < 5; bPtr++) {
+        for (unsigned int bPtr = 0; bPtr < 11; bPtr++) {
             gpuGraph = createGpuGraph(n);
             fillGpuGraphRandom(&gpuGraph);
             printf("Run with thread=%d & block=%d\n",threadArr[tPtr],blockArr[bPtr]);
