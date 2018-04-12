@@ -10,7 +10,7 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
     }
     initArrays(graph->dist, graph->predecessor, graph->size);
     graph->dist[startVertex] = 0;
-    double startTime, endTime;
+    double startTime;
     bool finished;
     unsigned int n, y, x;
     startTime = currentTime();
@@ -30,6 +30,5 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
             break;
         }
     }
-    endTime = currentTime() - startTime;
-    return endTime - startTime;
+    return currentTime() - startTime;
 }
