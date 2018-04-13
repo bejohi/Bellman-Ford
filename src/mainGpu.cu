@@ -182,7 +182,7 @@ void gpuDestroyGraph(GpuGraph *GpuGraph) {
     free(GpuGraph->adjMatrix1D);
 }
 
-__global__ void innercpuBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int *finished) {
+__global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int *finished) {
     unsigned int x, y, currentMatrixPosition;
     float weight;
     currentMatrixPosition = threadIdx.x + blockIdx.x * blockDim.x;
