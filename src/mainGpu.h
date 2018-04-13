@@ -20,6 +20,14 @@ typedef struct GpuGraph {
     float *dist; //< Stores the distance to a start vertex. Can be filled with shortest path algorithm.
 } GpuGraph;
 
+typedef struct CpuGraph {
+    unsigned int size;
+    bool isDirected;
+    bool error;
+    float **adjMatrix; //< a 2D matrix with the dimensions of size * size, where every colume indicates the distance between 2 vertices.
+    float *dist;
+} CpuGraph;
+
 // From Professional CUDA C Programming 2015
 
 #define CHECK(call)                                                            \

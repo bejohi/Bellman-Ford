@@ -1,4 +1,4 @@
-#include "bellmanFordCompleteGraphGpuParallel.h"
+#include "mainGpu.h"
 
 // TODO: Use better values.
 #define INFINIT_DISTANCE 1000000
@@ -6,73 +6,63 @@
 #define DEBUG 0
 #define DEBUG_DEEP 0
 
-
-// REGION: SEQU Graph
-typedef struct CompleteGraph {
-    unsigned int size; //< the number of vertices.
-    bool isDirected; //< indicates if the graph is directed.
-    bool error; //< a flag which will be true if any function call on the graph struct causes an error.
-    float **adjMatrix; //< a 2D matrix with the dimensions of size * size, where every colume indicates the distance between 2 vertices.
-    float *dist; //< Stores the distance to a start vertex. Can be filled with shortest path algorithm.
-} CompleteGraph;
-
-inline void initArraysSequ(float *distanceArray, long size) {
+static inline void cpuInitArr(float *distanceArray, long size) {
     unsigned long i;
     for (i = 0; i < size; i++) {
         distanceArray[i] = INFINIT_DISTANCE;
     }
 }
 
-void destroyCompleteGraph(CompleteGraph *completeGraph) {
-    free(completeGraph->dist);
+void cpuDestroyGraph(CpuGraph *CpuGraph) {
+    free(CpuGraph->dist);
     unsigned int i;
-    for (i = 0; i < completeGraph->size; i++) {
-        if (completeGraph->adjMatrix[i]) {
-            free(completeGraph->adjMatrix[i]);
+    for (i = 0; i < CpuGraph->size; i++) {
+        if (CpuGraph->adjMatrix[i]) {
+            free(CpuGraph->adjMatrix[i]);
         }
     }
-    free(completeGraph->adjMatrix);
+    free(CpuGraph->adjMatrix);
 }
 
-CompleteGraph createCompleteGraph(unsigned int size) {
+CpuGraph cpuCreateGraph(unsigned int size) {
     if (size > MAX_GRAPH_SIZE) {
         size = MAX_GRAPH_SIZE;
     }
-    CompleteGraph completeGraph = {.size = size, .isDirected = false};
+    CpuGraph CpuGraph = {.size = size, .isDirected = false};
 
-    completeGraph.dist = (float *) malloc(sizeof(float) * size);
-    completeGraph.adjMatrix = (float **) malloc(sizeof(float *) * size);
+    CpuGraph.dist = (float *) malloc(sizeof(float) * size);
+    CpuGraph.adjMatrix = (float **) malloc(sizeof(float *) * size);
 
-    if (!completeGraph.dist || !completeGraph.adjMatrix) {
-        destroyCompleteGraph(&completeGraph);
+    if (!CpuGraph.dist || !CpuGraph.adjMatrix) {
+        cpuDestroyGraph(&CpuGraph);
         return {};
     }
 
     unsigned int i, x;
 
     for (i = 0; i < size; i++) {
-        completeGraph.adjMatrix[i] = (float *) malloc(sizeof(float) * size);
-        if (!completeGraph.adjMatrix[i]) {
-            destroyCompleteGraph(&completeGraph);
+        CpuGraph.adjMatrix[i] = (float *) malloc(sizeof(float) * size);
+        if (!CpuGraph.adjMatrix[i]) {
+            cpuDestroyGraph(&CpuGraph);
             return {};
         }
         if (i == 0) {
             for (x = 0; x < size; x++) {
-                completeGraph.adjMatrix[i][x] = 0;
+                CpuGraph.adjMatrix[i][x] = 0;
             }
         } else {
-            memcpy(completeGraph.adjMatrix[i], completeGraph.adjMatrix[0], sizeof(float) * size);
+            memcpy(CpuGraph.adjMatrix[i], CpuGraph.adjMatrix[0], sizeof(float) * size);
         }
 
     }
-    return completeGraph;
+    return CpuGraph;
 }
 
-double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
+double cpuBellmanFord(CpuGraph *graph, unsigned int startVertex) {
     if (!graph || !graph->adjMatrix || !graph->dist) {
         return -1;
     }
-    initArraysSequ(graph->dist, graph->size);
+    cpuInitArr(graph->dist, graph->size);
     graph->dist[startVertex] = 0;
     double startTime, endTime;
     bool finished;
@@ -97,13 +87,13 @@ double bellmanFord(CompleteGraph *graph, unsigned int startVertex) {
     return endTime - startTime;
 }
 
-static inline void initArrays(float *distanceArray, long size) {
+static inline void gpuInitArrays(float *distanceArray, long size) {
     for (unsigned long i = 0; i < size; i++) {
         distanceArray[i] = INFINIT_DISTANCE;
     }
 }
 
-static void fillGpuGraphRandom(GpuGraph *graph) {
+static void gpuFillGraphRandom(GpuGraph *graph) {
     if (!graph) {
         return;
     }
@@ -113,8 +103,8 @@ static void fillGpuGraphRandom(GpuGraph *graph) {
     }
 }
 
-static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
-    CompleteGraph graph = createCompleteGraph(size);
+static CpuGraph gpuBuildRandomGraph(unsigned int size) {
+    CpuGraph graph = cpuCreateGraph(size);
     if (graph.error) {
         return graph;
     }
@@ -131,8 +121,8 @@ static CompleteGraph buildRandomCompleteGraph(unsigned int size) {
     return graph;
 }
 
-static bool cmpDistArr(CompleteGraph *completeGraph, GpuGraph *gpuGraph, unsigned int size) {
-    if (!gpuGraph->dist || !completeGraph->dist) {
+static bool cmpCpuWithGpuResult(CpuGraph *CpuGraph, GpuGraph *gpuGraph, unsigned int size) {
+    if (!gpuGraph->dist || !CpuGraph->dist) {
         if (DEBUG) printf("Diff error 1\n");
         return false;
     }
@@ -140,7 +130,7 @@ static bool cmpDistArr(CompleteGraph *completeGraph, GpuGraph *gpuGraph, unsigne
     if (DEBUG) {
         for (i = 0; i < size; i++) {
             for (y = 0; y < size; y++) {
-                if (completeGraph->adjMatrix[i][y] != gpuGraph->adjMatrix1D[y + (i * size)]) {
+                if (CpuGraph->adjMatrix[i][y] != gpuGraph->adjMatrix1D[y + (i * size)]) {
                     if (DEBUG) printf("Diff error 2 for i=%d & y=%d\n", i, y);
                     return false;
                 }
@@ -150,14 +140,14 @@ static bool cmpDistArr(CompleteGraph *completeGraph, GpuGraph *gpuGraph, unsigne
 
     if (DEBUG_DEEP) {
         for (i = 0; i < size; i++) {
-            printf("i=%d;GPU:%lf;CPU:%lf\n", i, gpuGraph->dist[i], completeGraph->dist[i]);
+            printf("i=%d;GPU:%lf;CPU:%lf\n", i, gpuGraph->dist[i], CpuGraph->dist[i]);
         }
     }
 
     for (i = 0; i < size; i++) {
-        if (gpuGraph->dist[i] != completeGraph->dist[i]) {
+        if (gpuGraph->dist[i] != CpuGraph->dist[i]) {
             if (DEBUG) printf("Diff error 3 for i=%d\n", i);
-            if (DEBUG) printf("GPU: %lf vs CPU:%lf\n", gpuGraph->dist[i], completeGraph->dist[i]);
+            if (DEBUG) printf("GPU: %lf vs CPU:%lf\n", gpuGraph->dist[i], CpuGraph->dist[i]);
             return false;
         }
     }
@@ -166,7 +156,7 @@ static bool cmpDistArr(CompleteGraph *completeGraph, GpuGraph *gpuGraph, unsigne
     return true;
 }
 
-GpuGraph createGpuGraph(unsigned int size) {
+GpuGraph gpuCreateGraph(unsigned int size) {
     if (size > MAX_GRAPH_SIZE) {
         size = MAX_GRAPH_SIZE;
     }
@@ -187,21 +177,21 @@ GpuGraph createGpuGraph(unsigned int size) {
     return GpuGraph;
 }
 
-void destroyGpuGraph(GpuGraph *GpuGraph) {
+void gpuDestroyGraph(GpuGraph *GpuGraph) {
     free(GpuGraph->dist);
     free(GpuGraph->adjMatrix1D);
 }
 
-__global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int *finished) {
+__global__ void innercpuBellmanFord(float *adjMatrix1D, float *dist, unsigned int size, int *finished) {
     unsigned int x, y, currentMatrixPosition;
+    float weight;
     currentMatrixPosition = threadIdx.x + blockIdx.x * blockDim.x;
+
     while (currentMatrixPosition < size * size) {
         y = currentMatrixPosition / size;
         x = currentMatrixPosition % size;
-        float weight = adjMatrix1D[currentMatrixPosition];
-        //if(DEBUG_DEEP) printf("weight:%lf\n",weight);
+        weight = adjMatrix1D[currentMatrixPosition];
         if (dist[y] + weight < dist[x]) {
-            if (DEBUG_DEEP) printf("innerBellmanFord if called\n");
             dist[x] = dist[y] + weight;
             *finished = 0;
 
@@ -213,11 +203,14 @@ __global__ void innerBellmanFord(float *adjMatrix1D, float *dist, unsigned int s
 
 double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int blockSize, unsigned int threadNum) {
 
+    // PRECHECK
     if (!graph || !graph->adjMatrix1D || !graph->dist) {
         return -1;
     }
+
+    // INIT LOCALS
     if (DEBUG) printf("Init arrays...\n");
-    initArrays(graph->dist, graph->size);
+    gpuInitArrays(graph->dist, graph->size);
     graph->dist[startVertex] = 0;
     int *finished = (int *) malloc(sizeof(int));
     int *finishedGpu;
@@ -226,7 +219,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     float *gpuDistArray;
     unsigned long size2D = sizeof(float) * graph->size * graph->size;
 
-    // GPU Setup
+    // GPU SETUP
     if (DEBUG) printf("CUDA malloc...\n");
     CHECK(cudaMalloc((void **) &gpuadjMatrix1D, size2D));
     CHECK(cudaMalloc((void **) &gpuDistArray, sizeof(float) * graph->size));
@@ -237,6 +230,7 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
     dim3 block(blockSize);
     dim3 grid(threadNum);
 
+    // START INNER LOOP
     double time = seconds();
     for (n = 0; n < graph->size; n++) {
         *finished = 1;
@@ -257,10 +251,10 @@ double bellmanFordGpu(GpuGraph *graph, unsigned int startVertex, unsigned int bl
         }
     }
     time = seconds() - time;
+
+    // CLEAN-UP
     CHECK(cudaMemcpy(graph->dist, gpuDistArray, sizeof(float) * graph->size, cudaMemcpyDeviceToHost));
     if (DEBUG) printf("Done...\n");
-
-
     CHECK(cudaFree(gpuadjMatrix1D));
     CHECK(cudaFree(gpuDistArray));
     CHECK(cudaFree(finishedGpu));
@@ -279,22 +273,22 @@ static void createReport() {
     unsigned int threadArr[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
     unsigned int blockArr[] = {50,100,150,200,250,300,350,400,500,1000,1024};
     printf("# Pre Build...\n");
-    CompleteGraph cpuGrap = buildRandomCompleteGraph(n);
-    bellmanFord(&cpuGrap, 0);
+    CpuGraph cpuGrap = gpuBuildRandomGraph(n);
+    cpuBellmanFord(&cpuGrap, 0);
     printf("# ...done! Run test cases...\n");
     for (unsigned int tPtr = 0; tPtr < 11; tPtr++) {
         for (unsigned int bPtr = 0; bPtr < 11; bPtr++) {
-            gpuGraph = createGpuGraph(n);
-            fillGpuGraphRandom(&gpuGraph);
+            gpuGraph = gpuCreateGraph(n);
+            gpuFillGraphRandom(&gpuGraph);
             if(DEBUG) printf("Run with thread=%d & block=%d\n",threadArr[tPtr],blockArr[bPtr]);
             double time = bellmanFordGpu(&gpuGraph, 0, blockArr[bPtr], threadArr[tPtr]);
-            bool check = cmpDistArr(&cpuGrap, &gpuGraph,gpuGraph.size);
+            bool check = cmpCpuWithGpuResult(&cpuGrap, &gpuGraph,gpuGraph.size);
             printf("parallelGpu;n=%d;threads=%d;blockSize=%d;time=%lf;check=%d;\n", n, threadArr[tPtr],
                    blockArr[bPtr], time, check);
-            destroyGpuGraph(&gpuGraph);
+            gpuDestroyGraph(&gpuGraph);
         }
     }
-    destroyCompleteGraph(&cpuGrap);
+    cpuDestroyGraph(&cpuGrap);
 
 
 }
@@ -307,10 +301,10 @@ static void preTest() {
     unsigned int n = 10000;
     unsigned int blockSize, threadsPerBlock;
     if (DEBUG) printf("Create graph...\n");
-    GpuGraph graph = createGpuGraph(n);
+    GpuGraph graph = gpuCreateGraph(n);
 
     if (DEBUG) printf("Fill graph...\n");
-    fillGpuGraphRandom(&graph);
+    gpuFillGraphRandom(&graph);
     if (DEBUG) printf("Fill done...\n");
     CHECK(cudaSetDevice(dev));
     blockSize = 512;
@@ -319,14 +313,14 @@ static void preTest() {
     double time = bellmanFordGpu(&graph, 0, blockSize, threadsPerBlock);
     printf("result=%lf\n", time);
     if (DEBUG) printf("Build cpu graph...\n");
-    CompleteGraph cpuGraph = buildRandomCompleteGraph(n);
+    CpuGraph cpuGraph = gpuBuildRandomGraph(n);
     if (DEBUG) printf("Run cpu bellman-ford...\n");
-    bellmanFord(&cpuGraph, 0);
+    cpuBellmanFord(&cpuGraph, 0);
     if (DEBUG) printf("Run check...\n");
-    bool check = cmpDistArr(&cpuGraph, &graph, graph.size);
+    bool check = cmpCpuWithGpuResult(&cpuGraph, &graph, graph.size);
     printf("check=%d\n", check);
-    destroyGpuGraph(&graph);
-    destroyCompleteGraph(&cpuGraph);
+    gpuDestroyGraph(&graph);
+    cpuDestroyGraph(&cpuGraph);
 }
 
 int main() {
