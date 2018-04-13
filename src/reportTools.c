@@ -47,7 +47,7 @@ void createReport(Report *report) {
     }
     unsigned int currentRunNumber, verticesPtr, threadPtr, currentThreadNumber, currentVertNumber;
     double time;
-    for (currentRunNumber = 1; currentRunNumber <= report->numberOfRuns; currentRunNumber++) {
+    for (currentRunNumber = 1; currentRunNumber <= 1; currentRunNumber++) {
         for (verticesPtr = 0; verticesPtr < report->verticesCasesSize; verticesPtr++) {
             currentVertNumber = report->verticesCases[verticesPtr];
 
@@ -57,7 +57,8 @@ void createReport(Report *report) {
                 return;
             }
             time = bellmanFord(&graphSequ, 0);
-            printf("sequ;case=%d;n=%d;time=%lf;\n", currentRunNumber, currentVertNumber, time);
+            // n;time;
+            printf("sequ;%d;%lf;\n", currentVertNumber, time);
 
             for (threadPtr = 0; threadPtr < report->threadCasesSize; threadPtr++) {
                 currentThreadNumber = report->threadCases[threadPtr];
@@ -68,7 +69,8 @@ void createReport(Report *report) {
                 }
                 time = bellmanFordParallelCpu(&graphParallel, 0, currentThreadNumber);
                 bool check = cmpGraphDistMatrix(&graphParallel, &graphSequ);
-                printf("parallelCpu;case=%d;n=%d;time=%lf;threads=%d;check=%d\n", currentRunNumber, currentVertNumber,
+                // n;time;threads;check;
+                printf("parallelCpu;%d;%lf;%d;%d\n", currentVertNumber,
                        time, currentThreadNumber, check);
                 destroyCompleteGraph(&graphParallel);
             }

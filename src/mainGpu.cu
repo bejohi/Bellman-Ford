@@ -283,7 +283,8 @@ static void createReport() {
             if(DEBUG) printf("Run with thread=%d & block=%d\n",threadArr[tPtr],blockArr[bPtr]);
             double time = bellmanFordGpu(&gpuGraph, 0, blockArr[bPtr], threadArr[tPtr]);
             bool check = cmpCpuWithGpuResult(&cpuGrap, &gpuGraph,gpuGraph.size);
-            printf("parallelGpu;n=%d;threads=%d;blockSize=%d;time=%lf;check=%d;\n", n, threadArr[tPtr],
+            //n;threads;blockSize;time;check;
+            printf("parallelGpu;%d;%d;%d;%lf;%d;\n", n, threadArr[tPtr],
                    blockArr[bPtr], time, check);
             gpuDestroyGraph(&gpuGraph);
         }
