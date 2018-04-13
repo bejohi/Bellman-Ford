@@ -270,7 +270,7 @@ static void createReport() {
     printf("# Create report...\n");
     unsigned int n = 10000;
     GpuGraph gpuGraph;
-    unsigned int threadArr[] = {1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
+    unsigned int threadArr[] = {10000, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024};
     unsigned int blockArr[] = {50,100,150,200,250,300,350,400,500,1000,1024};
     printf("# Pre Build...\n");
     CpuGraph cpuGrap = gpuBuildRandomGraph(n);
