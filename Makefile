@@ -7,7 +7,7 @@ gpu: gpu-build
 	./bin/bellmanFordCuda
 
 gpu-build: prep
-	nvcc -o bin/bellmanFordCuda src/bellmanFordCompleteGraphGpuParallel.cu -std=c++11 -lm
+	nvcc -o bin/bellmanFordCuda src/mainGpu.cu -std=c++11 -lm
 
 
 build: prep
